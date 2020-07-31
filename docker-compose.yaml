@@ -1,0 +1,68 @@
+version: "3.8"
+
+services: 
+  app:
+    build: ./
+    restart: always
+    volumes:
+      - ./:/var/www/app
+    ports:
+      - 4000:3000
+    env_file: 
+      - ./.env
+    depends_on:
+      - cache
+      - db
+  db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - 5433:5432
+    env_file:
+      - ./.env
+  cache:
+    image: redis:latest
+    restart: always
+    command: bash -c "redis-server --requirepass ${CACHE_PASSWORD}"
+    ports: 
+      - 6379:6379
+    env_file: 
+      - ./.env
+  log:
+    image: graylog/graylog:3.3
+    restart: always
+    env_file:
+      - ./.env
+    depends_on:
+      - log_db
+      - elasticsearch
+    ports:
+      # Web interface and REST API
+      - 9000:9000
+      # Syslog TCP
+      - 1514:1514
+      # Syslog UDP
+      - 1514:1514/udp
+      # GELF TCP
+      - 12201:12201
+      # GELF UDP
+      - 12201:12201/udp
+  log_db:
+    image: mongo:4.2
+    restart: always
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.10
+    restart: always
+    environment:
+      - http.host=0.0.0.0
+      - transport.host=localhost
+      - network.host=0.0.0.0
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    deploy:
+      resources:
+        limits:
+          memory: 1g

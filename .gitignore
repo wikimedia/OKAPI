@@ -1,0 +1,31 @@
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# env
+.env
+
+#builds
+/main
+/professional-api
+/tmp
+/gin-bin
+
+#tmp
+/tests/tmp/*
+!/tests/tmp/.gitkeep
+
+/tests/jobs/sync/tmp/*
+!/tests/jobs/sync/tmp/.gitkeep
