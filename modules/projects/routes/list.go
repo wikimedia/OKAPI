@@ -18,19 +18,23 @@ func List(c *gin.Context) {
 	c.BindQuery(&request)
 
 	model := []models.Project{}
-
-	params := map[search.Field]interface{}{
-		"db_name":    c.Query("db_name"),
-		"local_name": c.Query("local_name"),
-		"name":       c.Query("name"),
-		"size":       c.Query("size"),
+	params := map[search.Field]interface{}{}
+	filters := map[search.Field]func(query *orm.Query){}
+	columns := map[search.Field]func(column string, param string) func(*orm.Query){
+		"db_name":         filter.Like,
+		"lang_local_name": filter.Like,
+		"lang_name":       filter.Like,
+		"size":            filter.Equal,
+		"site_name":       filter.Equal,
+		"updates":         filter.Equal,
 	}
 
-	filters := map[search.Field]func(query *orm.Query){
-		"db_name":    filter.Like("db_name", params["db_name"].(string)),
-		"local_name": filter.Like("local_name", params["local_name"].(string)),
-		"name":       filter.Like("name", params["name"].(string)),
-		"size":       filter.Equal("size", params["size"].(string)),
+	for name, filter := range columns {
+		params[name] = c.Query(string(name))
+		switch params[name].(type) {
+		case string:
+			filters[name] = filter(string(name), params[name].(string))
+		}
 	}
 
 	sch := search.

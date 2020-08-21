@@ -5,12 +5,13 @@ import "strings"
 // Index struct to represent sql index
 type Index struct {
 	TableName string
+	Type      string
 	Columns   []string
 }
 
 // Create generate sql to create index
 func (index Index) Create() string {
-	return "CREATE INDEX " + index.TableName + "_" + strings.Join(index.Columns, "_") +
+	return "CREATE " + index.Type + " INDEX " + index.TableName + "_" + strings.Join(index.Columns, "_") +
 		" ON " + index.TableName + " (" + strings.Join(index.Columns, ", ") + ");"
 }
 

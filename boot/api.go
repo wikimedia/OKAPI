@@ -1,10 +1,11 @@
 package boot
 
 import (
-	"github.com/gin-gonic/gin"
 	"okapi/helpers/logger"
 	"okapi/lib/env"
 	"okapi/modules"
+
+	"github.com/gin-gonic/gin"
 )
 
 // API function to start API server
@@ -16,8 +17,8 @@ func API() {
 	}
 
 	modules.Init(router)
-	err := router.Run(":" + env.Context.APIPort)
-	if err != nil {
+
+	if err := router.Run(":" + env.Context.APIPort); err != nil {
 		logger.SYSTEM.Panic(logger.Message{
 			ShortMessage: "API: api failed to start",
 			FullMessage:  err.Error(),

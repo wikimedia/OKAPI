@@ -1,4 +1,4 @@
-package deletePage
+package delete
 
 import (
 	"encoding/json"

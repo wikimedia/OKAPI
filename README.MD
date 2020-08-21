@@ -12,7 +12,7 @@
 ```
 REDIS_ADDR=localhost:6379
 DB_ADDR=localhost:5432
-DB_NAME=okapi
+DB_NAME=okpai
 DB_USER=admin
 DB_PASSWORD=sql
 AWS_REGION=us-east-1
@@ -25,6 +25,7 @@ API_MODE=dev
 API_AUTH=admin:password,user:password
 API_TEST_URL=http://app:3000
 VOLUME_MOUNT_PATH=tmp
+API_ORES_URL=https://ores.wikimedia.org/v3
 ```
 2. Running migrations:
 
@@ -42,10 +43,10 @@ $ go run main.go
 $ go run main.go -task=projects -workers=10
 ```
 
-4. Generating your first dump. We need to run 3 tasks in order to get things done. First one would be `scan` - this one gets pages info and metadata into the database. Second one is `sync` this one gets HTML files and puts them into the storage. And final one `bundle` this one generates dump archive and puts into the storage as well. Lets do a small project just to get things rolling (list of projects https://dumps.wikimedia.org/other/pagetitles/20200410/):
+4. Generating your first dump. We need to run 3 tasks in order to get things done. First one would be `scan` - this one gets pages info and metadata into the database. Second one is `pull` this one gets HTML files and puts them into the storage. And final one `bundle` this one generates dump archive and puts into the storage as well. Lets do a small project just to get things rolling (list of projects https://dumps.wikimedia.org/other/pagetitles/20200410/):
 ```bash
 $ go run main.go -task=scan -project=afwikibooks -workers=5
-$ go run main.go -task=sync -project=afwikibooks -workers=5
+$ go run main.go -task=pull -project=afwikibooks -workers=5
 $ go run main.go -task=bundle -project=afwikibooks -workers=5
 ```
 
@@ -79,11 +80,11 @@ $ ./main -server=stream -workers=10
 ```
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=test_password
-POSTGRES_DB=okapi
+POSTGRES_DB=okpai
 CACHE_ADDR=cache:6379
 CACHE_PASSWORD=testpass123
 DB_ADDR=db:5432
-DB_NAME=okapi
+DB_NAME=okpai
 DB_USER=admin
 DB_PASSWORD=test_password
 AWS_REGION=us-east-1
@@ -101,6 +102,7 @@ GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6
 GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
 GRAYLOG_PASSWORD=supersecretpassword
 VOLUME_MOUNT_PATH=tmp
+API_ORES_URL=https://ores.wikimedia.org/v3
 ```
 
 3. Then we can just run `docker-compose up` and we should be able to run api requests.

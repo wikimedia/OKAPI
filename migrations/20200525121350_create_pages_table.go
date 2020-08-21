@@ -1,9 +1,10 @@
 package main
 
 import (
+	"okapi/lib/db"
+
 	"github.com/go-pg/pg/v9/orm"
 	migrations "github.com/robinjoseph08/go-pg-migrations/v2"
-	"okapi/lib/db"
 )
 
 func init() {
@@ -26,16 +27,20 @@ func init() {
 			Type: "int not null",
 		},
 		{
+			Name: "revisions",
+			Type: "int[6] not null default '{}'",
+		},
+		{
+			Name: "updates",
+			Type: "int not null default 0",
+		},
+		{
+			Name: "scores",
+			Type: "jsonb default '{}'::jsonb",
+		},
+		{
 			Name: "path",
 			Type: "varchar(1000)",
-		},
-		{
-			Name: "tid",
-			Type: "varchar(255) not null",
-		},
-		{
-			Name: "lang",
-			Type: "varchar(3) not null",
 		},
 		{
 			Name: "site_url",
@@ -53,7 +58,16 @@ func init() {
 	indexes := []db.Index{
 		{
 			TableName: tableName,
-			Columns:   []string{"title", "lang"},
+			Columns:   []string{"title"},
+		},
+		{
+			TableName: tableName,
+			Columns:   []string{"project_id"},
+		},
+		{
+			Type:      "UNIQUE",
+			TableName: tableName,
+			Columns:   []string{"title", "project_id"},
 		},
 	}
 	foreignKeys := []db.ForeignKey{

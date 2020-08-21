@@ -47,5 +47,10 @@ var Module = module.Module{
 			Method:  http.MethodGet,
 			Handler: routes.Download,
 		},
+		{
+			Path:    "/:id/unbundle",
+			Method:  http.MethodPost,
+			Handler: routes.Unbundle,
+		},
 	},
 }

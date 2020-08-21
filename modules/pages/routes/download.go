@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -34,5 +35,7 @@ func Download(c *gin.Context) {
 		return
 	}
 
+	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", model.Title+".html"))
+	c.Writer.Header().Add("Content-Type", "application/octet-stream")
 	c.File(filePath)
 }

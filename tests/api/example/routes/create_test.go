@@ -2,14 +2,14 @@ package routes
 
 import (
 	"net/http"
-	"okapi/lib/api"
 	"okapi/lib/env"
+	"okapi/lib/test_api"
 	"testing"
 )
 
 func TestCreate(t *testing.T) {
 	env.Context.Fill()
-	res, err := api.Client().R().Post("/example")
+	res, err := testApi.Client().R().Post("/example")
 
 	if err != nil {
 		t.Error(err)

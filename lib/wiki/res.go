@@ -40,3 +40,23 @@ type Sitematrix map[string]struct {
 type Projects struct {
 	Sitematrix Sitematrix `json:"sitematrix"`
 }
+
+// Revision wiki API response for revisions history
+type Revision struct {
+	RevID     int       `json:"revid"`
+	ParentID  int       `json:"parentid"`
+	Minor     bool      `json:"minor"`
+	User      string    `json:"user"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// RevisionsHistory revisions history response
+type RevisionsHistory struct {
+	Query struct {
+		Pages []struct {
+			PageID    int        `json:"pageid"`
+			Title     string     `json:"title"`
+			Revisions []Revision `json:"revisions"`
+		} `json:"pages"`
+	} `json:"query"`
+}

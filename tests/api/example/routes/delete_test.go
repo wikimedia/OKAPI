@@ -2,14 +2,14 @@ package routes
 
 import (
 	"net/http"
-	"okapi/lib/api"
 	"okapi/lib/env"
+	"okapi/lib/test_api"
 	"testing"
 )
 
 func TestDelete(t *testing.T) {
 	env.Context.Fill()
-	res, err := api.Client().R().Delete("/example/1")
+	res, err := testApi.Client().R().Delete("/example/1")
 
 	if err != nil {
 		t.Error(err)

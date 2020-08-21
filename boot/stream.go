@@ -4,28 +4,12 @@ import (
 	"time"
 
 	"okapi/lib/stream"
-	"okapi/streams/page"
-	"okapi/streams/revision"
+	"okapi/streams"
 )
 
 // Stream function to start events server
 func Stream() {
-	clients := []*stream.Client{
-		{
-			Path:    "/revision-create",
-			Handler: revision.Handler,
-		},
-		{
-			Path:    "/page-delete",
-			Handler: pageDelete.Handler,
-		},
-		{
-			Path:    "/page-move",
-			Handler: pageDelete.Handler,
-		},
-	}
-
-	for _, client := range clients {
+	for _, client := range streams.Clients {
 		go func(client *stream.Client) {
 			for {
 				stream.Subscribe(client)

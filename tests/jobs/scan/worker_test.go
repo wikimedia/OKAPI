@@ -14,32 +14,43 @@ func TestWorker(t *testing.T) {
 	defer db.Close()
 
 	project := models.Project{
-		Name:      "English",
-		Code:      "en",
-		SiteName:  "Wikipedia",
-		SiteURL:   "https://en.wikipedia.org",
-		SiteCode:  "wiki",
-		DBName:    "enwiki_scan",
-		Dir:       "ltr",
-		LocalName: "English",
-		Active:    true,
+		Lang:          "en",
+		LangName:      "English",
+		LangLocalName: "English",
+		SiteName:      "Wikipedia",
+		SiteURL:       "https://en.wikipedia.org",
+		SiteCode:      "wiki",
+		DBName:        "enwiki_scan",
+		Dir:           "ltr",
+		TimeDelay:     0,
+		Active:        true,
 	}
 
-	models.DB().Model(&project).SelectOrInsert()
-
-	page := models.Page{
-		Title:     "United_States",
-		SiteURL:   "https://en.wikipedia.org",
-		ProjectID: project.ID,
-	}
-	_, _, err := scan.Worker(1, &page)
+	_, err := models.DB().
+		Model(&project).
+		Where("db_name = ?", project.DBName).
+		SelectOrInsert()
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if page.ID <= 0 || page.Revision <= 0 {
+	page := models.Page{
+		Title:     "United_States",
+		SiteURL:   "https://en.wikipedia.org",
+		Revision:  1,
+		ProjectID: project.ID,
+		Project:   &project,
+	}
+	_, _, err = scan.Worker(1, &page)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if page.ID <= 0 || page.Revisions[0] <= 0 {
 		t.Error("Page `" + page.Title + "` wasn't updated in the database.")
 	}
 }

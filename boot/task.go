@@ -6,10 +6,7 @@ import (
 
 	"okapi/helpers/logger"
 	"okapi/helpers/state"
-	"okapi/jobs/bundle"
-	"okapi/jobs/projects"
-	"okapi/jobs/scan"
-	"okapi/jobs/sync"
+	"okapi/jobs"
 	"okapi/lib/cmd"
 	"okapi/lib/task"
 	"okapi/models"
@@ -19,14 +16,8 @@ import (
 func Task() {
 	name := task.Name(*cmd.Context.Task)
 	project := models.Project{}
-	jobs := map[task.Name]task.Task{
-		"projects": projects.Task,
-		"bundle":   bundle.Task,
-		"scan":     scan.Task,
-		"sync":     sync.Task,
-	}
+	job, exists := jobs.Tasks[name]
 
-	job, exists := jobs[name]
 	if !exists {
 		logger.SYSTEM.Panic(logger.Message{
 			ShortMessage: fmt.Sprintf("Task: task '%s' not found", string(name)),

@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"okapi/helpers/logger"
 	"okapi/helpers/state"
-	"okapi/jobs/bundle"
-	"okapi/jobs/scan"
-	"okapi/jobs/sync"
+	"okapi/jobs"
 	"okapi/lib/cache"
 	"okapi/lib/cmd"
 	"okapi/lib/runner"
@@ -32,25 +30,26 @@ func Runner() {
 		}
 	}()
 
-	jobs := map[task.Name]task.Task{
-		"bundle": bundle.Task,
-		"scan":   scan.Task,
-		"sync":   sync.Task,
-	}
-
-	channel := client.Subscribe("runner").Channel()
+	channel := client.Subscribe(runner.Channel).Channel()
 	for message := range channel {
 		command, err := runner.ParseCommand([]byte(message.Payload))
+		namespace := "runner/" + command.Task + "/" + command.DBName
 
 		if err != nil {
 			continue
 		}
 
-		job, exists := jobs[task.Name(command.Task)]
+		job, exists := jobs.Tasks[task.Name(command.Task)]
 
 		if !exists {
+			message := "Task " + command.Task + " not found!"
+
 			logger.RUNNER.Error(logger.Message{
-				ShortMessage: "Task " + command.Task + " not found!",
+				ShortMessage: message,
+			})
+
+			runner.Error.Send(namespace, &runner.Message{
+				Info: message,
 			})
 			continue
 		}
@@ -59,27 +58,39 @@ func Runner() {
 		err = models.DB().Model(&project).Where("db_name = ?", command.DBName).Select()
 
 		if err != nil {
+			message := "Project " + project.DBName + " not found!"
+
 			logger.RUNNER.Error(logger.Message{
-				ShortMessage: "Project " + project.DBName + " not found!",
+				ShortMessage: message,
 				FullMessage:  err.Error(),
+			})
+
+			runner.Error.Send(namespace, &runner.Message{
+				Info: message,
 			})
 			continue
 		}
 
 		executor := runner.Executor{
-			Namespace: "runner/" + command.Task + "/" + command.DBName,
+			Namespace: namespace,
 			Handler: func() error {
 				restart := true
-				workers := project.Schedule[command.Task].Workers
+				workers := *cmd.Context.Workers
+
+				if schedule, ok := project.Schedule[command.Task]; ok {
+					workers = schedule.Workers
+				}
+
 				err := task.Execute(job, &task.Context{
 					State:   state.New(command.Task+"_"+command.DBName, 24*time.Hour),
 					Project: &project,
 					Cmd: &cmd.Params{
-						Task:     &command.Task,
-						Project:  &command.DBName,
-						Position: cmd.Context.Position,
-						Restart:  &restart,
-						Workers:  &workers,
+						Task:    &command.Task,
+						Project: &command.DBName,
+						Offset:  cmd.Context.Offset,
+						Limit:   cmd.Context.Limit,
+						Restart: &restart,
+						Workers: &workers,
 					},
 				})
 
@@ -99,5 +110,5 @@ func Runner() {
 }
 
 func cleanup() {
-	cache.Client().Del("runner/status")
+	cache.Client().Del(runner.Channel + "/status")
 }

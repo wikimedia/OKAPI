@@ -41,62 +41,35 @@ func Execute(cmd Task, ctx *Context) error {
 		ctx.State.Clear()
 	}
 
-	wg := &sync.WaitGroup{}
-	wg.Add(*ctx.Cmd.Workers)
 	pool, worker, finish := cmd(ctx)
-	jobs := make(chan Payload)
 
-	for id := 1; id <= *ctx.Cmd.Workers; id++ {
-		go func(id int) {
-			defer wg.Done()
-			for job := range jobs {
-				message, info, err := worker(id, job)
-				if err != nil {
-					logger.JOB.Error(logger.Message{
-						ShortMessage: fmt.Sprintf("Worker #%d, encountered and error!", id),
-						FullMessage:  err.Error(),
-						Params:       info,
-					})
-				} else {
-					logger.JOB.Info(logger.Message{
-						ShortMessage: fmt.Sprintf("Worker #%d, processed the unit!", id),
-						FullMessage:  message,
-						Params:       info,
-					})
-				}
-			}
-		}(id)
-	}
+	if pool != nil && worker != nil {
+		wg := &sync.WaitGroup{}
+		wg.Add(*ctx.Cmd.Workers)
+		jobs := make(chan Payload)
 
-	queue, err := pool()
-	if err == nil {
-		for len(queue) > 0 {
-			for _, payload := range queue {
-				jobs <- payload
-			}
-
-			queue, err = pool()
-			if err != nil {
-				logger.JOB.Error(logger.Message{
-					ShortMessage: fmt.Sprintf("Job: '%s' exec stopped", *ctx.Cmd.Task),
-					FullMessage:  err.Error(),
-				})
-				break
-			}
+		for id := 1; id <= *ctx.Cmd.Workers; id++ {
+			go runWorker(id, worker, wg, jobs)
 		}
-	} else {
-		logger.JOB.Error(logger.Message{
-			ShortMessage: fmt.Sprintf("Job: '%s' exec stopped", *ctx.Cmd.Task),
-			FullMessage:  err.Error(),
-		})
+
+		err := runPool(pool, jobs)
+
+		if err != nil {
+			logger.JOB.Error(logger.Message{
+				ShortMessage: fmt.Sprintf("Job: '%s' exec stopped", *ctx.Cmd.Task),
+				FullMessage:  err.Error(),
+			})
+		}
+
+		close(jobs)
+		wg.Wait()
 	}
 
-	close(jobs)
-	wg.Wait()
 	ctx.State.Clear()
 
 	if finish != nil {
-		err = finish()
+		err := finish()
+
 		if err != nil {
 			logger.JOB.Error(logger.Message{
 				ShortMessage: fmt.Sprintf("Job: '%s' exec stopped", *ctx.Cmd.Task),
@@ -104,6 +77,66 @@ func Execute(cmd Task, ctx *Context) error {
 			})
 		}
 	}
+
+	return nil
+}
+
+func runWorker(id int, handler Worker, wg *sync.WaitGroup, jobs chan Payload) {
+	defer wg.Done()
+
+	for job := range jobs {
+		message, info, err := handler(id, job)
+
+		if err != nil {
+			logger.JOB.Error(logger.Message{
+				ShortMessage: fmt.Sprintf("Worker #%d, encountered and error!", id),
+				FullMessage:  err.Error(),
+				Params:       info,
+			})
+		} else {
+			logger.JOB.Info(logger.Message{
+				ShortMessage: fmt.Sprintf("Worker #%d, processed the unit!", id),
+				FullMessage:  message,
+				Params:       info,
+			})
+		}
+	}
+}
+
+func runPool(pool Pool, jobs chan Payload) error {
+	wg := sync.WaitGroup{}
+	preload := 0
+	queue, err := pool()
+
+	if err != nil {
+		return err
+	}
+
+	for len(queue) > 0 {
+		if preload > 5 {
+			wg.Wait()
+		}
+
+		wg.Add(1)
+		preload++
+
+		go func(queue []Payload) {
+			for _, payload := range queue {
+				jobs <- payload
+			}
+
+			wg.Done()
+			preload--
+		}(queue)
+
+		queue, err = pool()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	wg.Wait()
 
 	return nil
 }

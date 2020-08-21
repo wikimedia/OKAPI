@@ -1,11 +1,12 @@
 package scan
 
 import (
-	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
-	"net/url"
+	"time"
 
+	"okapi/lib/ores"
 	"okapi/lib/task"
 	"okapi/lib/wiki"
 	"okapi/models"
@@ -21,36 +22,43 @@ func Worker(id int, payload task.Payload) (string, map[string]interface{}, error
 		"_id":     page.ID,
 	}
 
-	res, err := wiki.Client(page.SiteURL).R().Get("/api/rest_v1/page/title/" + url.QueryEscape(page.Title))
+	wikiPage, status, err := wiki.Client(page.SiteURL).GetMeta(page.Title)
 
 	if err != nil {
-		return "", info, fmt.Errorf(message+", %s", page.Title, page.ID, err)
+		return "", info, err
 	}
 
-	if res.StatusCode() != http.StatusOK {
-		info["_status"] = res.StatusCode()
-		return "", info, fmt.Errorf(message+", status code: %d", page.Title, page.ID, res.StatusCode())
+	if status != http.StatusOK {
+		info["_status"] = status
+		return "", info, fmt.Errorf(message+", status code: %d", page.Title, page.ID, status)
 	}
 
-	title := wiki.Title{}
-	err = json.Unmarshal(res.Body(), &title)
-	if err != nil {
-		return "", info, fmt.Errorf(message+", %s", page.Title, page.ID, err)
-	}
-
-	if title.Items[0].Redirect {
+	if wikiPage.Redirect {
 		info["_status"] = 301
 		return "", info, fmt.Errorf(message+", %s", page.Title, page.ID, "page is a redirect!")
 	}
 
-	wikiPage := title.Items[0]
-	models.DB().Model(page).Column("id", "created_at").Where("title = ? and project_id = ?", page.Title, page.ProjectID).Select()
-	page.TID = wikiPage.TID
-	page.Revision = wikiPage.Revision
+	models.DB().
+		Model(page).
+		Where("title = ? and project_id = ?", page.Title, page.ProjectID).
+		Select()
+
 	page.Title = wikiPage.Title
-	page.Lang = wikiPage.PageLanguage
+	current := time.Now()
+	diff := current.Sub(wikiPage.Timestamp)
+
+	if int(math.Floor(diff.Hours())) < page.Project.TimeDelay {
+		err = scoreRevision(page, wikiPage.Revision, current)
+	} else {
+		page.SetRevision(wikiPage.Revision)
+	}
+
+	if err != nil {
+		return "", info, fmt.Errorf(message+", %s", page.Title, page.ID, err)
+	}
 
 	err = models.Save(page)
+
 	if err != nil {
 		return "", info, fmt.Errorf(message+", %s", page.Title, page.ID, err)
 	}
@@ -58,4 +66,63 @@ func Worker(id int, payload task.Payload) (string, map[string]interface{}, error
 	info["_id"] = page.ID
 
 	return fmt.Sprintf(message, page.Title, page.ID), info, nil
+}
+
+func scoreRevision(page *models.Page, revision int, currentTime time.Time) error {
+	threshold := page.Project.GetThreshold(ores.Damaging)
+
+	if threshold == nil {
+		return fmt.Errorf("%s threshold model does not exist", ores.Damaging)
+	}
+
+	score, scoreErr := ores.Damaging.ScoreOne(page.Project.DBName, revision)
+
+	if scoreErr == nil && score.Probability.False >= *threshold {
+		page.SetRevision(page.Revision)
+		page.SetScore(page.Revision, ores.Damaging, *score)
+		return nil
+	}
+
+	revisions, status, err := wiki.Client(page.SiteURL).GetRevisionsHistory(page.Title, 10)
+
+	if err != nil {
+		return err
+	}
+
+	if status != http.StatusOK {
+		return fmt.Errorf("Error: response failed with status code -> '%d'", status)
+	}
+
+	revs := []int{}
+
+	for _, rev := range revisions {
+		revs = append(revs, rev.RevID)
+	}
+
+	if scoreErr == nil {
+		scores, err := ores.ScoreMany(page.Project.DBName, ores.Damaging, revs)
+
+		if err == nil {
+			for _, rev := range revs {
+				if score, ok := scores[rev]; ok {
+					if score.Probability.False >= *threshold {
+						page.SetRevision(rev)
+						page.SetScore(rev, ores.Damaging, *score)
+						return nil
+					}
+				}
+			}
+		}
+	}
+
+	for _, rev := range revisions {
+		diff := currentTime.Sub(rev.Timestamp)
+
+		if int(math.Floor(diff.Hours())) >= page.Project.TimeDelay {
+			page.SetRevision(rev.RevID)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("Error: all scoring methods failed")
 }

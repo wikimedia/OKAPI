@@ -31,6 +31,7 @@ type Params struct {
 	APIAuth         string
 	APITestURL      string
 	AuthSecretKey   string
+	APIOresURL      string
 	VolumeMountPath string
 }
 
@@ -69,6 +70,7 @@ func (params *Params) Fill() {
 	params.APIMode = os.Getenv("API_MODE")
 	params.APIAuth = os.Getenv("API_AUTH")
 	params.APITestURL = os.Getenv("API_TEST_URL")
+	params.APIOresURL = os.Getenv("API_ORES_URL")
 	params.AuthSecretKey = os.Getenv("AUTH_SECRET_KEY")
 	params.VolumeMountPath = os.Getenv("VOLUME_MOUNT_PATH")
 }

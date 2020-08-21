@@ -3,8 +3,8 @@ package main
 import (
 	"okapi/helpers/state"
 	"okapi/jobs/bundle"
+	"okapi/jobs/pull"
 	"okapi/jobs/scan"
-	"okapi/jobs/sync"
 	"okapi/lib/cache"
 	"okapi/lib/cmd"
 	"okapi/lib/env"
@@ -26,15 +26,15 @@ func TestJobs(t *testing.T) {
 	defer ch.Close()
 
 	project := models.Project{
-		Name:      "English",
-		LocalName: "English",
-		Code:      "en",
-		SiteName:  "Wikipedia",
-		SiteCode:  "wiki",
-		SiteURL:   "https://en.wikipedia.org",
-		DBName:    "enwiki_test",
-		Dir:       "ltr",
-		Active:    true,
+		LangName:      "English",
+		LangLocalName: "English",
+		Lang:          "en",
+		SiteName:      "Wikipedia",
+		SiteCode:      "wiki",
+		SiteURL:       "https://en.wikipedia.org",
+		DBName:        "enwiki_test",
+		Dir:           "ltr",
+		Active:        true,
 	}
 
 	models.DB().Model(&project).Where("db_name = ?", project.DBName).SelectOrInsert()
@@ -55,16 +55,16 @@ func TestJobs(t *testing.T) {
 			})
 		},
 		func() error {
-			return task.Execute(sync.Task, &task.Context{
+			return task.Execute(pull.Task, &task.Context{
 				Cmd:     cmd.Context,
-				State:   state.New("sync_"+project.DBName, 24*time.Hour),
+				State:   state.New("pull_"+project.DBName, 24*time.Hour),
 				Project: &project,
 			})
 		},
 		func() error {
 			return task.Execute(bundle.Task, &task.Context{
 				Cmd:     cmd.Context,
-				State:   state.New("sync_"+project.DBName, 24*time.Hour),
+				State:   state.New("bundle_"+project.DBName, 24*time.Hour),
 				Project: &project,
 			})
 		},
@@ -78,7 +78,7 @@ func TestJobs(t *testing.T) {
 		}
 	}
 
-	_, err = storage.Local.Client().Get(project.Path)
+	_, err = storage.Local.Client().Get(project.RelativeBundlePath())
 
 	if err != nil {
 		t.Error(err)

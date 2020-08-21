@@ -5,9 +5,10 @@ import (
 
 	"okapi/middleware"
 
-	"github.com/gin-gonic/gin"
 	"okapi/lib/module"
 	"okapi/modules/projects/routes"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Module projects module instance
@@ -41,6 +42,16 @@ var Module = module.Module{
 			Path:    "/:id",
 			Method:  http.MethodPut,
 			Handler: routes.Update,
+		},
+		{
+			Path:    "/:id/download",
+			Method:  http.MethodGet,
+			Handler: routes.Download,
+		},
+		{
+			Path:    "/:id/bundle",
+			Method:  http.MethodPost,
+			Handler: routes.Bundle,
 		},
 	},
 }

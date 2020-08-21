@@ -1,9 +1,10 @@
 package main
 
 import (
+	"okapi/lib/db"
+
 	"github.com/go-pg/pg/v9/orm"
 	migrations "github.com/robinjoseph08/go-pg-migrations/v2"
-	"okapi/lib/db"
 )
 
 func init() {
@@ -12,18 +13,6 @@ func init() {
 		{
 			Name: "id",
 			Type: "SERIAL PRIMARY KEY",
-		},
-		{
-			Name: "name",
-			Type: "varchar(255) not null",
-		},
-		{
-			Name: "local_name",
-			Type: "varchar(255) not null",
-		},
-		{
-			Name: "code",
-			Type: "varchar(25) not null",
 		},
 		{
 			Name: "site_name",
@@ -40,6 +29,34 @@ func init() {
 		{
 			Name: "db_name",
 			Type: "varchar(255) not null unique",
+		},
+		{
+			Name: "schedule",
+			Type: "jsonb not null default '{}'::jsonb",
+		},
+		{
+			Name: "threshold",
+			Type: "jsonb not null default '{\"damaging\": 0.6}'::jsonb",
+		},
+		{
+			Name: "lang_name",
+			Type: "varchar(255) not null",
+		},
+		{
+			Name: "lang_local_name",
+			Type: "varchar(255) not null",
+		},
+		{
+			Name: "updates",
+			Type: "int not null default 0",
+		},
+		{
+			Name: "time_delay",
+			Type: "smallint not null default 48",
+		},
+		{
+			Name: "lang",
+			Type: "varchar(25) not null",
 		},
 		{
 			Name: "dir",
@@ -70,9 +87,18 @@ func init() {
 			Type: "timestamp with time zone",
 		},
 	}
+	indexes := []db.Index{
+		{
+			TableName: tableName,
+			Columns: []string{
+				"db_name",
+			},
+		},
+	}
 	table := db.Table{
 		Name:    tableName,
 		Columns: columns,
+		Indexes: indexes,
 	}
 
 	up := func(db orm.DB) error {

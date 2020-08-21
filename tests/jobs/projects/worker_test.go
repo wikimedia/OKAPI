@@ -14,15 +14,15 @@ func TestWorker(t *testing.T) {
 	defer db.Close()
 
 	project := models.Project{
-		Name:      "English",
-		Code:      "en",
-		SiteName:  "Wikipedia",
-		SiteURL:   "https://en.wikipedia.org",
-		SiteCode:  "wiki",
-		DBName:    "enwiki_new",
-		Dir:       "ltr",
-		LocalName: "English",
-		Active:    true,
+		LangName:      "English",
+		Lang:          "en",
+		SiteName:      "Wikipedia",
+		SiteURL:       "https://en.wikipedia.org",
+		SiteCode:      "wiki",
+		DBName:        "enwiki_new",
+		Dir:           "ltr",
+		LangLocalName: "English",
+		Active:        true,
 	}
 
 	_, _, err := projects.Worker(1, &project)
@@ -32,6 +32,6 @@ func TestWorker(t *testing.T) {
 	}
 
 	if project.ID <= 0 {
-		t.Error("Project `" + project.Name + "` wasn't created")
+		t.Error("Project `" + project.Lang + "` wasn't created")
 	}
 }

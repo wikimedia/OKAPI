@@ -7,10 +7,9 @@ type Name string
 
 // Queue names
 const (
-	Sync       Name = "sync"
-	Scan       Name = "scan"
-	DeletePage Name = "delete-page"
-	Test       Name = "test"
+	PageDelete   Name = "page_delete"
+	PagePull     Name = "page_pull"
+	PageRevision Name = "page_revision"
 )
 
 // Add push to the queue by name

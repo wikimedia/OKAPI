@@ -8,26 +8,36 @@ import (
 	"okapi/lib/cmd"
 	"okapi/lib/env"
 	"okapi/lib/minifier"
+	"okapi/lib/ores"
 	"okapi/lib/storage"
 	"okapi/listeners"
 	"okapi/models"
+	"os"
 )
 
 func main() {
+	os.Setenv("TZ", "UTC")
 	cmd.Context.Parse()
 	env.Context.Parse(".env")
 	cache.Client()
 	storage.Local.Client()
 	storage.Remote.Client()
 	minifier.Client()
-	logger.Client()
-	defer logger.Close()
 	events.Init()
 	listeners.Init()
 	ch := cache.Client()
 	db := models.DB()
+	logger.Client()
+	defer logger.Close()
 	defer db.Close()
 	defer ch.Close()
+
+	// ORES
+	if oresErr := ores.Client(); oresErr != nil {
+		logger.API.Error(logger.Message{
+			FullMessage: oresErr.Error(),
+		})
+	}
 
 	switch {
 	case *cmd.Context.Task != "":

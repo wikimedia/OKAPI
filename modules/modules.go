@@ -1,18 +1,17 @@
 package modules
 
 import (
-	"github.com/gin-gonic/gin"
 	"okapi/lib/module"
 	"okapi/middleware"
 	"okapi/modules/auth"
-	"okapi/modules/dumps"
 	"okapi/modules/example"
 	"okapi/modules/pages"
 	"okapi/modules/projects"
+
+	"github.com/gin-gonic/gin"
 )
 
 var modules = []module.Module{
-	dumps.Module,
 	example.Module,
 	projects.Module,
 	pages.Module,

@@ -4,11 +4,12 @@ import (
 	"errors"
 	"time"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
-	"github.com/gin-gonic/gin"
 	"okapi/helpers/password"
 	"okapi/lib/env"
 	"okapi/models"
+
+	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/gin-gonic/gin"
 )
 
 type login struct {
@@ -41,6 +42,7 @@ func client() error {
 		Authenticator:   authenticator,
 		Authorizator:    authorizator,
 		Unauthorized:    unauthorized,
+		TokenLookup:     "header: Authorization, query: token",
 	})
 
 	return err

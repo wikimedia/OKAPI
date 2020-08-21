@@ -2,7 +2,11 @@ package runner
 
 import (
 	"okapi/lib/cache"
+	"time"
 )
+
+// Channel runner cache channel name
+const Channel string = "runner"
 
 // Executor struct to hold namespace and func of executable
 type Executor struct {
@@ -17,7 +21,8 @@ func (exec *Executor) Run() {
 	})
 
 	if cache.Client().Exists(exec.Namespace).Val() != 1 {
-		defer cache.Client().Del(exec.Namespace).Result()
+		cache.Client().Set(exec.Namespace, "", 24*time.Hour)
+		defer func() { cache.Client().Del(exec.Namespace).Result() }()
 
 		Info.Send(exec.Namespace, &Message{
 			Info: "Starting the task!",
