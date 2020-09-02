@@ -12,10 +12,10 @@ import (
 
 var client *resty.Client
 var wg = sync.WaitGroup{}
-var messages chan *Message = make(chan *Message)
+var messages = make(chan *Message)
 
-// Client http client for graylog
-func Client() *resty.Client {
+// Init http client for graylog
+func Init() error {
 	if client == nil {
 		client = resty.New().
 			SetHostURL(env.Context.LogURL).
@@ -23,7 +23,7 @@ func Client() *resty.Client {
 		go sender()
 	}
 
-	return client
+	return nil
 }
 
 // Close function to close sending channel
@@ -41,7 +41,7 @@ func Send(message Message) {
 // Send send log message to endpoint
 func send(info map[string]interface{}) {
 	message, _ := json.Marshal(info)
-	Client().R().SetBody(message).Post("")
+	client.R().SetBody(message).Post("")
 }
 
 func sender() {
@@ -62,15 +62,10 @@ func sender() {
 			req["level"] = uint(msg.Level)
 		}
 
-		if *cmd.Context.Project != "*" {
-			req["_project"] = *cmd.Context.Project
-		}
-
 		req["short_message"] = msg.ShortMessage
 		req["full_message"] = msg.FullMessage
-		req["_job"] = *cmd.Context.Task
-		req["_server"] = *cmd.Context.Server
 		req["_category"] = msg.Category
+		req["_server"] = *cmd.Context.Server
 
 		if msg.Params != nil {
 			for name, val := range msg.Params {

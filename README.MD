@@ -12,7 +12,7 @@
 ```
 REDIS_ADDR=localhost:6379
 DB_ADDR=localhost:5432
-DB_NAME=okpai
+DB_NAME=okapi
 DB_USER=admin
 DB_PASSWORD=sql
 AWS_REGION=us-east-1
@@ -80,11 +80,11 @@ $ ./main -server=stream -workers=10
 ```
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=test_password
-POSTGRES_DB=okpai
+POSTGRES_DB=okapi
 CACHE_ADDR=cache:6379
 CACHE_PASSWORD=testpass123
 DB_ADDR=db:5432
-DB_NAME=okpai
+DB_NAME=okapi
 DB_USER=admin
 DB_PASSWORD=test_password
 AWS_REGION=us-east-1

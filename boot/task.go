@@ -19,9 +19,7 @@ func Task() {
 	job, exists := jobs.Tasks[name]
 
 	if !exists {
-		logger.SYSTEM.Panic(logger.Message{
-			ShortMessage: fmt.Sprintf("Task: task '%s' not found", string(name)),
-		})
+		logger.System.Panic("Task startup failed", fmt.Sprintf("Task '%s' not found", string(name)))
 	}
 
 	if *cmd.Context.Project != "*" {
@@ -29,9 +27,7 @@ func Task() {
 	}
 
 	if *cmd.Context.Project != "*" && project.ID <= 0 {
-		logger.SYSTEM.Panic(logger.Message{
-			ShortMessage: fmt.Sprintf("Task: project '%s' not found", *cmd.Context.Project),
-		})
+		logger.System.Panic("Task startup failed", fmt.Sprintf("Project '%s' not found", *cmd.Context.Project))
 	}
 
 	err := task.Execute(job, &task.Context{
@@ -41,9 +37,6 @@ func Task() {
 	})
 
 	if err != nil {
-		logger.SYSTEM.Panic(logger.Message{
-			ShortMessage: fmt.Sprintf("Task: task '%s' exec error", string(name)),
-			FullMessage:  err.Error(),
-		})
+		logger.System.Panic(fmt.Sprintf("Task '%s' exec error", string(name)), err.Error())
 	}
 }

@@ -78,7 +78,7 @@ func TestJobs(t *testing.T) {
 		}
 	}
 
-	_, err = storage.Local.Client().Get(project.RelativeBundlePath())
+	_, err = storage.Local.Client().Get(project.Path)
 
 	if err != nil {
 		t.Error(err)

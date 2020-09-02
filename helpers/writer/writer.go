@@ -2,6 +2,7 @@ package writer
 
 import (
 	"archive/tar"
+	"compress/gzip"
 	"io"
 	"os"
 	"sync"
@@ -16,21 +17,24 @@ type Payload struct {
 
 // Client writer client struct
 type Client struct {
-	Queue     chan Payload
-	File      *os.File
-	WaitGroup *sync.WaitGroup
-	TarWriter *tar.Writer
+	Queue      chan Payload
+	File       *os.File
+	WaitGroup  *sync.WaitGroup
+	TarWriter  *tar.Writer
+	GzipWriter *gzip.Writer
 }
 
 // New create new writer client
 func New(file *os.File) *Client {
-	tarWriter := tar.NewWriter(file)
+	gzipWriter := gzip.NewWriter(file)
+	tarWriter := tar.NewWriter(gzipWriter)
 
 	return &Client{
-		File:      file,
-		Queue:     make(chan Payload),
-		WaitGroup: &sync.WaitGroup{},
-		TarWriter: tarWriter,
+		File:       file,
+		Queue:      make(chan Payload),
+		WaitGroup:  &sync.WaitGroup{},
+		TarWriter:  tarWriter,
+		GzipWriter: gzipWriter,
 	}
 }
 

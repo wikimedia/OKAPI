@@ -24,3 +24,8 @@ func NewClient() *redis.Client {
 		Password: env.Context.CachePassword,
 	})
 }
+
+// Init function to initialize on startup
+func Init() error {
+	return Client().Ping().Err()
+}

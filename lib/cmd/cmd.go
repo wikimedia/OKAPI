@@ -1,6 +1,8 @@
 package cmd
 
-import "flag"
+import (
+	"flag"
+)
 
 // Context current execution context
 var Context *Params = &Params{}
@@ -28,4 +30,10 @@ func (params *Params) Parse() {
 	params.Offset = flag.Int("offset", 0, "Offset for task to start")
 	params.Limit = flag.Int("limit", 10000, "Maximum amount of items to process")
 	flag.Parse()
+}
+
+// Init function to initialize on startup
+func Init() error {
+	Context.Parse()
+	return nil
 }

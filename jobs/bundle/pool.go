@@ -3,6 +3,8 @@ package bundle
 import (
 	"okapi/lib/task"
 	"okapi/models"
+
+	"github.com/go-pg/pg/v9"
 )
 
 // Pool adding new pages to the queue
@@ -17,6 +19,10 @@ func Pool(ctx *task.Context, options *Options) func() ([]task.Payload, error) {
 
 		if ctx.Project.ID > 0 {
 			query.Where("project_id = ?", ctx.Project.ID)
+		}
+
+		if len(options.RevDamaged) > 0 {
+			query.Where("revision not in (?)", pg.In(options.RevDamaged))
 		}
 
 		options.Offset += options.Limit

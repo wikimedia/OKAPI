@@ -12,8 +12,9 @@ const Name = "page_unbundle"
 
 // Payload revision event payload
 type Payload struct {
-	Title  string
-	DBName string
+	Revision int
+	Title    string
+	DBName   string
 }
 
 // Event revision happened event

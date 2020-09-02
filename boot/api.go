@@ -19,9 +19,6 @@ func API() {
 	modules.Init(router)
 
 	if err := router.Run(":" + env.Context.APIPort); err != nil {
-		logger.SYSTEM.Panic(logger.Message{
-			ShortMessage: "API: api failed to start",
-			FullMessage:  err.Error(),
-		})
+		logger.System.Panic("API: api failed to start", err.Error())
 	}
 }

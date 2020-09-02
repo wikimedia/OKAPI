@@ -1,50 +1,35 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 	"okapi/helpers/exception"
-	"okapi/lib/ores"
 	"okapi/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-type projectParams struct {
-	Threshold map[ores.Model]float64 `form:"threshold"`
-}
-
-// Update one entity example
+// Update a project record
 func Update(c *gin.Context) {
-	var params projectParams
-	projectId := c.Param("id")
+	var err error
+	project := models.Project{}
 
-	if err := c.ShouldBindJSON(&params); err != nil {
+	if project.ID, err = strconv.Atoi(c.Param("id")); err != nil {
 		c.JSON(http.StatusBadRequest, exception.Message(err))
+	}
 
+	if err := c.ShouldBindJSON(&project); err != nil {
+		c.JSON(http.StatusBadRequest, exception.Message(err))
 		return
 	}
 
-	var project models.Project
-
-	err := models.DB().Model(&project).Where("id = ?", projectId).Select()
+	_, err = models.DB().
+		Model(&project).
+		Column("threshold", "time_delay", "updated_at").
+		WherePK().
+		Update()
 
 	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			exception.Message(fmt.Errorf("project with id %s does not exist", projectId)),
-		)
-
-		return
-	}
-
-	if len(params.Threshold) > 0 {
-		for modelName, thresholdVal := range params.Threshold {
-			project.Threshold[modelName] = thresholdVal
-		}
-	}
-
-	if err := models.Save(&project); err != nil {
 		c.JSON(http.StatusBadRequest, exception.Message(err))
 	} else {
 		c.JSON(http.StatusOK, &project)

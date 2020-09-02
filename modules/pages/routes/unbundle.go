@@ -35,8 +35,9 @@ func Unbundle(c *gin.Context) {
 
 	go event.Fire(page_unbundle.Name, map[string]interface{}{
 		"payload": page_unbundle.Payload{
-			Title:  model.Title,
-			DBName: model.Project.DBName,
+			Title:    model.Title,
+			DBName:   model.Project.DBName,
+			Revision: model.Revision,
 		},
 	})
 

@@ -1,7 +1,6 @@
 package env
 
 import (
-	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -36,18 +35,18 @@ type Params struct {
 }
 
 // Parse environment variables
-func (params *Params) Parse(path string) {
+func (params *Params) Parse(path string) error {
 	err := godotenv.Load(path)
 
 	if err != nil {
 		err = godotenv.Load("../" + path)
 	}
 
-	if err != nil {
-		log.Panic("Environment file('.env') not found!")
+	if err == nil {
+		params.Fill()
 	}
 
-	params.Fill()
+	return err
 }
 
 // Fill get variables form env into struct
@@ -73,4 +72,9 @@ func (params *Params) Fill() {
 	params.APIOresURL = os.Getenv("API_ORES_URL")
 	params.AuthSecretKey = os.Getenv("AUTH_SECRET_KEY")
 	params.VolumeMountPath = os.Getenv("VOLUME_MOUNT_PATH")
+}
+
+// Init function to initialize on startup
+func Init() error {
+	return Context.Parse(".env")
 }

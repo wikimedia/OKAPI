@@ -9,7 +9,7 @@ import (
 
 // Worker projects unit processor
 func Worker(id int, payload task.Payload) (string, map[string]interface{}, error) {
-	message := "project name '%s', project id #%d"
+	message := "name:'%s', id:#%d"
 	project := payload.(*models.Project)
 	info := map[string]interface{}{
 		"_db_name":   project.DBName,

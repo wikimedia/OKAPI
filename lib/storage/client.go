@@ -1,5 +1,9 @@
 package storage
 
+import (
+	"fmt"
+)
+
 var connections = map[ConnectionName]Connection{}
 
 var initializers = map[ConnectionName]func() Connection{
@@ -22,4 +26,13 @@ func (cName ConnectionName) Client() Connection {
 	connections[cName] = initializers[cName]()
 
 	return connections[cName]
+}
+
+// Init function to run on startup
+func Init() error {
+	if Remote.Client() == nil || Local.Client() == nil {
+		return fmt.Errorf("Storage connection broken")
+	}
+
+	return nil
 }

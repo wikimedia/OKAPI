@@ -1,15 +1,15 @@
 package scan
 
 import (
-	"fmt"
-
-	"okapi/helpers/logger"
 	"okapi/lib/dump"
 	"okapi/lib/task"
 )
 
+// Name task name for trigger
+var Name task.Name = "scan"
+
 // Task to get titles from dump and store them in database
-func Task(ctx *task.Context) (task.Pool, task.Worker, task.Finish) {
+func Task(ctx *task.Context) (task.Pool, task.Worker, task.Finish, error) {
 	options := Options{}
 	titles := []string{}
 	worker := func(id int, payload task.Payload) (string, map[string]interface{}, error) {
@@ -25,12 +25,5 @@ func Task(ctx *task.Context) (task.Pool, task.Worker, task.Finish) {
 		titles, err = dump.Titles(ctx.Project.DBName, options.Folder)
 	}
 
-	if err != nil {
-		logger.JOB.Panic(logger.Message{
-			ShortMessage: fmt.Sprintf("Job: 'scan' for the project '%s' exec failed", *ctx.Cmd.Project),
-			FullMessage:  err.Error(),
-		})
-	}
-
-	return Pool(ctx, &options, titles), worker, nil
+	return Pool(ctx, &options, titles), worker, nil, err
 }

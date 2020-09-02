@@ -27,5 +27,5 @@ Thumbs.db
 /tests/tmp/*
 !/tests/tmp/.gitkeep
 
-/tests/jobs/sync/tmp/*
-!/tests/jobs/sync/tmp/.gitkeep
+/tests/jobs/pull/tmp/*
+!/tests/jobs/pull/tmp/.gitkeep

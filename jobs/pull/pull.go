@@ -1,24 +1,16 @@
 package pull
 
 import (
-	"fmt"
-	"okapi/helpers/logger"
 	"okapi/lib/task"
 )
 
+// Name task name for trigger
+var Name task.Name = "pull"
+
 // Task for getting html for pages
-func Task(ctx *task.Context) (task.Pool, task.Worker, task.Finish) {
+func Task(ctx *task.Context) (task.Pool, task.Worker, task.Finish, error) {
 	options := Options{}
-
 	err := options.Init(ctx)
-
-	if err != nil {
-		logger.JOB.Panic(logger.Message{
-			ShortMessage: fmt.Sprintf("Job: 'pull' for the project '%s' exec failed", *ctx.Cmd.Project),
-			FullMessage:  err.Error(),
-		})
-	}
-
 	worker := func(id int, payload task.Payload) (string, map[string]interface{}, error) {
 		message, info, err := Worker(id, payload)
 		options.Position++
@@ -26,5 +18,5 @@ func Task(ctx *task.Context) (task.Pool, task.Worker, task.Finish) {
 		return message, info, err
 	}
 
-	return Pool(ctx, &options), worker, nil
+	return Pool(ctx, &options), worker, nil, err
 }

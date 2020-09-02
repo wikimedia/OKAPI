@@ -1,18 +1,30 @@
 package models
 
 import (
+	"fmt"
+	pg_db "okapi/lib/db"
+
 	"github.com/go-pg/pg/v9"
-	"okapi/lib/db"
 )
 
-// Database database instance
-var database *pg.DB
+var db *pg.DB
 
 // DB Get database client
 func DB() *pg.DB {
-	if database == nil {
-		database = db.Client()
+	if db == nil {
+		db = pg_db.Client()
 	}
 
-	return database
+	return db
+}
+
+// Init function to init db on startup
+func Init() error {
+	if DB() == nil {
+		return fmt.Errorf("Database client not created")
+	}
+
+	_, err := db.Exec("select 1")
+
+	return err
 }

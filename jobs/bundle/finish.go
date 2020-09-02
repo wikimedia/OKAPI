@@ -9,6 +9,6 @@ import (
 func Finish(ctx *task.Context, options *Options) func() error {
 	return func() error {
 		options.Writer.Close()
-		return bundle.Generate(ctx.Project)
+		return bundle.Upload(ctx.Project)
 	}
 }

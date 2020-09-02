@@ -2,43 +2,79 @@ package logger
 
 // Type of log category
 const (
-	SYSTEM Category = "system"
-	JOB    Category = "job"
-	API    Category = "api"
-	STREAM Category = "stream"
-	QUEUE  Category = "queue"
-	RUNNER Category = "runner"
+	System  Category = "system"
+	Job     Category = "job"
+	API     Category = "api"
+	Steream Category = "stream"
+	Queue   Category = "queue"
+	Runner  Category = "runner"
 )
 
 // Category log category level
 type Category string
 
 // Panic method to panic for predefined category
-func (category Category) Panic(message Message) {
-	message.Category = category
-	Panic(message)
+func (category Category) Panic(shortMessage string, fullMessage string, params ...map[string]interface{}) {
+	Panic(Message{
+		Category:     category,
+		ShortMessage: shortMessage,
+		FullMessage:  fullMessage,
+		Params:       getParams(params),
+	})
 }
 
 // Error function to show and log the error by caregory
-func (category Category) Error(message Message) {
-	message.Category = category
-	Error(message)
+func (category Category) Error(shortMessage string, fullMessage string, params ...map[string]interface{}) {
+	Error(Message{
+		Category:     category,
+		ShortMessage: shortMessage,
+		FullMessage:  fullMessage,
+		Params:       getParams(params),
+	})
 }
 
 // Success function to show and log success message
-func (category Category) Success(message Message) {
-	message.Category = category
-	Success(message)
+func (category Category) Success(shortMessage string, fullMessage string, params ...map[string]interface{}) {
+	Success(Message{
+		Category:     category,
+		ShortMessage: shortMessage,
+		FullMessage:  fullMessage,
+		Params:       getParams(params),
+	})
 }
 
 // Send function to send the request message
-func (category Category) Send(message Message) {
-	message.Category = category
-	Send(message)
+func (category Category) Send(shortMessage string, fullMessage string, params ...map[string]interface{}) {
+	Send(Message{
+		Category:     category,
+		ShortMessage: shortMessage,
+		FullMessage:  fullMessage,
+		Params:       getParams(params),
+	})
 }
 
 // Info print info message to console
-func (category Category) Info(message Message) {
-	message.Category = category
-	Info(message)
+func (category Category) Info(shortMessage string, fullMessage string, params ...map[string]interface{}) {
+	Info(Message{
+		Category:     category,
+		ShortMessage: shortMessage,
+		FullMessage:  fullMessage,
+		Params:       getParams(params),
+	})
+}
+
+func getParams(params []map[string]interface{}) map[string]interface{} {
+	for _, param := range params {
+		return param
+	}
+	return map[string]interface{}{}
+}
+
+// Log simple function to go error with message
+func (category Category) Log(err error, shortMessage string) {
+	Error(Message{
+		Category:     category,
+		FullMessage:  err.Error(),
+		ShortMessage: shortMessage,
+	})
 }

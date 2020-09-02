@@ -2,9 +2,8 @@ package unbundle
 
 import (
 	page_unbundle "okapi/events/page/unbundle"
-	"okapi/helpers/bundle"
+	"okapi/helpers/damaging"
 	"okapi/lib/runner"
-	"okapi/models"
 
 	"github.com/gookit/event"
 )
@@ -17,25 +16,15 @@ func Init() {
 // Listener event handler
 func Listener(e event.Event) error {
 	payload := e.Data()["payload"].(page_unbundle.Payload)
-	page := models.Page{}
-
-	err := models.DB().
-		Model(&page).
-		Relation("Project").
-		Where("title = ? and db_name = ?", payload.Title, payload.DBName).
-		Select()
+	err := damaging.Add(payload.Revision, payload.DBName)
 
 	if err != nil {
 		return err
 	}
 
-	if err = bundle.Delete(page.Project, &page); err != nil {
-		return err
-	}
-
 	command := runner.Command{
-		Task:   "upload",
-		DBName: page.Project.DBName,
+		Task:   "bundle",
+		DBName: payload.DBName,
 	}
 
 	return command.Exec()

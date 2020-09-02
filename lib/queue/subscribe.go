@@ -2,35 +2,15 @@ package queue
 
 import (
 	"time"
-
-	"okapi/helpers/logger"
-	"okapi/lib/cmd"
 )
 
 // Subscribe func to create queue subscriber (go routine use recommended)
-func Subscribe(subscriber Name, worker Worker) {
+func Subscribe(subscriber Name, worker Worker, workers int) {
 	list := make(chan string)
 	defer close(list)
 
-	for i := 0; i < *cmd.Context.Workers; i++ {
-		go func() {
-			for item := range list {
-				message, info, err := worker(item)
-				if err != nil {
-					logger.QUEUE.Error(logger.Message{
-						ShortMessage: "Queue worker encountered and error!",
-						FullMessage:  err.Error(),
-						Params:       info,
-					})
-				} else {
-					logger.QUEUE.Success(logger.Message{
-						ShortMessage: "Queue worker processed the unit!",
-						FullMessage:  message,
-						Params:       info,
-					})
-				}
-			}
-		}()
+	for i := 0; i < workers; i++ {
+		go runWorker(list, worker)
 	}
 
 	for {

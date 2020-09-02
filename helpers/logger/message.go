@@ -6,7 +6,6 @@ type Message struct {
 	Host         string
 	ShortMessage string
 	FullMessage  string
-	Job          string
 	Level        Level
 	Category     Category
 	Params       map[string]interface{}

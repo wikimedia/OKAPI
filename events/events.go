@@ -8,7 +8,7 @@ import (
 )
 
 // Init initialize events
-func Init() {
+func Init() error {
 	events := []func(){
 		page_revision.Init,
 		page_delete.Init,
@@ -19,4 +19,6 @@ func Init() {
 	for _, initializer := range events {
 		initializer()
 	}
+
+	return nil
 }

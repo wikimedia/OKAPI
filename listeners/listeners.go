@@ -8,7 +8,7 @@ import (
 )
 
 // Init initialize event listeners
-func Init() {
+func Init() error {
 	listeners := []func(){
 		page_delete.Init,
 		page_revision.Init,
@@ -19,4 +19,6 @@ func Init() {
 	for _, listener := range listeners {
 		listener()
 	}
+
+	return nil
 }

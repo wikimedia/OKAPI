@@ -1,6 +1,8 @@
 package minifier
 
 import (
+	"fmt"
+
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/html"
 )
@@ -13,7 +15,18 @@ func Client() *minify.M {
 		return mini
 	}
 
-	mini := minify.New()
+	mini = minify.New()
 	mini.AddFunc("text/html", html.Minify)
 	return mini
+}
+
+// Init function to run on star
+func Init() error {
+	Client()
+
+	if mini == nil {
+		return fmt.Errorf("Minify client not available")
+	}
+
+	return nil
 }

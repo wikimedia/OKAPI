@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"fmt"
 	"okapi/lib/env"
 	"okapi/lib/ores"
 	"okapi/lib/schedule"
@@ -26,41 +25,26 @@ type Project struct {
 	Path          string                    `pg:"type:varchar(255)" json:"path"`
 	Active        bool                      `pg:",use_zero,notnull" json:"active"`
 	Schedule      map[string]*schedule.Info `pg:"type:jsonb,notnull" json:"schedule"`
-	Threshold     map[ores.Model]float64    `pg:",notnull" json:"threshold"`
-	TimeDelay     int                       `pg:",use_zero" json:"time_delay"` // in hours
+	Threshold     map[ores.Model]float64    `pg:",notnull" json:"threshold" binding:"required,threshold"`
+	TimeDelay     int                       `pg:",use_zero" json:"time_delay" binding:"required,number"` // in hours
 	Updates       int                       `pg:",use_zero" json:"updates"`
 	Pages         []*Page                   `pg:"-" json:"pages"`
 	DumpedAt      time.Time                 `json:"dumped_at"`
 }
 
-// BundleName get file name for a  bundle
-func (project *Project) BundleName() string {
-	return "export_" + project.DBName + ".tar"
+// GetExportName get name of the export
+func (project *Project) GetExportName() string {
+	return "export_" + project.DBName + ".tar.gz"
 }
 
-// RelativeBundlePath create bundle relative path
-func (project *Project) RelativeBundlePath() string {
-	return "/exports/" + project.DBName + "/" + project.BundleName()
+// GetExportPath get path of the export
+func (project *Project) GetExportPath() string {
+	return env.Context.VolumeMountPath + "/exports/" + project.DBName + "/" + project.GetExportName()
 }
 
-// BundlePath get bundle path
-func (project *Project) BundlePath() string {
-	return env.Context.VolumeMountPath + project.RelativeBundlePath()
-}
-
-// RemoteBundlePath get bundle path for remote storage
-func (project *Project) RemoteBundlePath() string {
-	return project.DBName + "/" + project.CompressedBundleName()
-}
-
-// CompressedBundleName get compressed bundle name
-func (project *Project) CompressedBundleName() string {
-	return project.BundleName() + ".bz2"
-}
-
-// CompressedBundlePath get compressed bundle path
-func (project *Project) CompressedBundlePath() string {
-	return project.BundlePath() + ".bz2"
+// GetRemoteExportPath get remote path of the export
+func (project *Project) GetRemoteExportPath() string {
+	return "/exports/" + project.DBName + "/" + project.GetExportName()
 }
 
 // GetThreshold getting the value by name
@@ -68,33 +52,6 @@ func (project *Project) GetThreshold(oresModel ores.Model) *float64 {
 	if project.Threshold != nil {
 		if val, exists := project.Threshold[oresModel]; exists {
 			return &val
-		}
-	}
-
-	return nil
-}
-
-var thresholdModels = []ores.Model{ores.Damaging}
-
-// thresholdValidation validates threshold model names
-func (project *Project) thresholdValidation() error {
-	if len(project.Threshold) == 0 {
-		return nil
-	}
-
-	for modelName := range project.Threshold {
-		isValidName := false
-
-		for i := 0; i < len(thresholdModels); i++ {
-			if modelName == thresholdModels[i] {
-				isValidName = true
-
-				break
-			}
-		}
-
-		if !isValidName {
-			return fmt.Errorf("\"%s\" threshold model name is not valid", modelName)
 		}
 	}
 
@@ -109,10 +66,10 @@ func (project *Project) AfterSelect(ctx context.Context) error {
 		project.Schedule = make(map[string]*schedule.Info)
 	}
 
-	for _, task := range []string{"scan", "pull", "bundle", "general"} {
+	for _, task := range schedule.Jobs {
 		if _, ok := project.Schedule[task]; !ok {
 			project.Schedule[task] = &schedule.Info{
-				Workers:   10,
+				Workers:   250,
 				Frequency: schedule.Daily,
 			}
 		}
@@ -125,10 +82,6 @@ var _ pg.BeforeUpdateHook = (*Project)(nil)
 
 // BeforeUpdate model hook
 func (project *Project) BeforeUpdate(ctx context.Context) (context.Context, error) {
-	if err := project.thresholdValidation(); err != nil {
-		return ctx, err
-	}
-
 	project.OnUpdate()
 	return ctx, nil
 }
@@ -137,10 +90,6 @@ var _ pg.BeforeInsertHook = (*Project)(nil)
 
 // BeforeInsert model hook
 func (project *Project) BeforeInsert(ctx context.Context) (context.Context, error) {
-	if err := project.thresholdValidation(); err != nil {
-		return ctx, err
-	}
-
 	project.OnInsert()
 	return ctx, nil
 }

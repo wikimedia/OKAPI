@@ -8,6 +8,8 @@ import (
 	"okapi/helpers/state"
 	"okapi/lib/cmd"
 	"okapi/models"
+
+	"gopkg.in/gookit/color.v1"
 )
 
 // Context task execution context
@@ -18,7 +20,7 @@ type Context struct {
 }
 
 // Task struct
-type Task func(ctx *Context) (Pool, Worker, Finish)
+type Task func(ctx *Context) (Pool, Worker, Finish, error)
 
 // Name task name
 type Name string
@@ -37,11 +39,16 @@ type Finish func() error
 
 // Execute some task with context
 func Execute(cmd Task, ctx *Context) error {
+	defer func() { ctx.State.Clear() }()
 	if *ctx.Cmd.Restart {
 		ctx.State.Clear()
 	}
 
-	pool, worker, finish := cmd(ctx)
+	pool, worker, finish, err := cmd(ctx)
+
+	if err != nil {
+		return err
+	}
 
 	if pool != nil && worker != nil {
 		wg := &sync.WaitGroup{}
@@ -53,28 +60,19 @@ func Execute(cmd Task, ctx *Context) error {
 		}
 
 		err := runPool(pool, jobs)
-
-		if err != nil {
-			logger.JOB.Error(logger.Message{
-				ShortMessage: fmt.Sprintf("Job: '%s' exec stopped", *ctx.Cmd.Task),
-				FullMessage:  err.Error(),
-			})
-		}
-
 		close(jobs)
 		wg.Wait()
-	}
 
-	ctx.State.Clear()
+		if err != nil {
+			return err
+		}
+	}
 
 	if finish != nil {
 		err := finish()
 
 		if err != nil {
-			logger.JOB.Error(logger.Message{
-				ShortMessage: fmt.Sprintf("Job: '%s' exec stopped", *ctx.Cmd.Task),
-				FullMessage:  err.Error(),
-			})
+			return err
 		}
 	}
 
@@ -88,17 +86,9 @@ func runWorker(id int, handler Worker, wg *sync.WaitGroup, jobs chan Payload) {
 		message, info, err := handler(id, job)
 
 		if err != nil {
-			logger.JOB.Error(logger.Message{
-				ShortMessage: fmt.Sprintf("Worker #%d, encountered and error!", id),
-				FullMessage:  err.Error(),
-				Params:       info,
-			})
+			logger.Job.Error(fmt.Sprintf("Worker #%d - encountered and error!", id), err.Error(), info)
 		} else {
-			logger.JOB.Info(logger.Message{
-				ShortMessage: fmt.Sprintf("Worker #%d, processed the unit!", id),
-				FullMessage:  message,
-				Params:       info,
-			})
+			color.Success.Println(fmt.Sprintf("Worker #%d - %s", id, message))
 		}
 	}
 }

@@ -5,14 +5,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"okapi/helpers/logger"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Log log middleware for gin
 func Log() gin.HandlerFunc {
 	return gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		formatted := fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+		shortMessage := fmt.Sprintf("Api request to '%s'", param.Path)
+		fullMessage := fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
 			param.ClientIP,
 			param.TimeStamp.Format(time.RFC1123),
 			param.Method,
@@ -23,28 +25,22 @@ func Log() gin.HandlerFunc {
 			param.Request.UserAgent(),
 			param.ErrorMessage,
 		)
-
-		message := logger.Message{
-			ShortMessage: fmt.Sprintf("Api request to '%s'", param.Path),
-			FullMessage:  formatted,
-			Params: map[string]interface{}{
-				"_client_ip":     param.ClientIP,
-				"_method":        param.Method,
-				"_path":          param.Path,
-				"_status":        param.StatusCode,
-				"_latency":       param.Latency,
-				"_user_agent":    param.Request.UserAgent(),
-				"_error_message": param.ErrorMessage,
-			},
+		info := map[string]interface{}{
+			"_client_ip":     param.ClientIP,
+			"_method":        param.Method,
+			"_path":          param.Path,
+			"_status":        param.StatusCode,
+			"_latency":       param.Latency,
+			"_user_agent":    param.Request.UserAgent(),
+			"_error_message": param.ErrorMessage,
 		}
 
 		if param.StatusCode >= http.StatusBadRequest {
-			message.Level = logger.ERROR
+			logger.API.Error(shortMessage, fullMessage, info)
 		} else {
-			message.Level = logger.INFO
+			logger.API.Info(shortMessage, fullMessage, info)
 		}
 
-		logger.API.Send(message)
-		return formatted
+		return fullMessage
 	})
 }

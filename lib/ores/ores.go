@@ -9,8 +9,8 @@ import (
 
 var client *resty.Client
 
-// Client external api client for ORES scores
-func Client() error {
+// Init external api client for ORES scores
+func Init() error {
 	if client != nil {
 		return nil
 	}

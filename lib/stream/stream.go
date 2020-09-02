@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/r3labs/sse"
 	"okapi/helpers/logger"
 	"okapi/lib/cmd"
 	"okapi/lib/env"
+
+	"github.com/r3labs/sse"
 )
 
 // Client struct for client info
@@ -28,10 +29,7 @@ func Subscribe(client *Client) {
 		httpClient.OnDisconnect(func(c *sse.Client) {
 			httpClient.Unsubscribe(events)
 			wg.Done()
-			logger.STREAM.Error(logger.Message{
-				ShortMessage: "Stream: 'messages' stream was disconnected!",
-				FullMessage:  c.URL,
-			})
+			logger.Steream.Error(fmt.Sprintf("Stream: '%s' stream was disconnected!", c.URL), "")
 		})
 
 		for i := 1; i <= *cmd.Context.Workers; i++ {
@@ -42,10 +40,7 @@ func Subscribe(client *Client) {
 			}()
 		}
 	} else {
-		logger.STREAM.Error(logger.Message{
-			ShortMessage: fmt.Sprintf("Stream: '%s' connection failed", client.Path),
-			FullMessage:  err.Error(),
-		})
+		logger.Steream.Error(fmt.Sprintf("Stream '%s' connection failed", client.Path), err.Error())
 	}
 
 	wg.Wait()
