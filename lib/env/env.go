@@ -32,6 +32,9 @@ type Params struct {
 	AuthSecretKey   string
 	APIOresURL      string
 	VolumeMountPath string
+	ElasticURL      string
+	ElasticUsername string
+	ElasticPassword string
 }
 
 // Parse environment variables
@@ -72,6 +75,9 @@ func (params *Params) Fill() {
 	params.APIOresURL = os.Getenv("API_ORES_URL")
 	params.AuthSecretKey = os.Getenv("AUTH_SECRET_KEY")
 	params.VolumeMountPath = os.Getenv("VOLUME_MOUNT_PATH")
+	params.ElasticURL = os.Getenv("ELASTIC_URL")
+	params.ElasticUsername = os.Getenv("ELASTIC_USERNAME")
+	params.ElasticPassword = os.Getenv("ELASTIC_PASSWORD")
 }
 
 // Init function to initialize on startup

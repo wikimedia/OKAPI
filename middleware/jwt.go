@@ -72,8 +72,9 @@ func payloadFunc(data interface{}) jwt.MapClaims {
 func identityHandler(c *gin.Context) interface{} {
 	var user models.User
 	claims := jwt.ExtractClaims(c)
+	user.ID = int(claims[IdentityKey].(float64))
 
-	models.DB().Model(&user).Where("id = ?", claims[IdentityKey]).Select()
+	models.DB().Model(&user).Relation("Role").WherePK().Select()
 
 	return &user
 }
@@ -86,7 +87,7 @@ func authenticator(c *gin.Context) (interface{}, error) {
 		return "", ErrMissingLoginValues
 	}
 
-	models.DB().Model(&user).Where("email = ?", body.Email).Select()
+	models.DB().Model(&user).Where("email = ? or username = ?", body.Email, body.Email).Select()
 
 	if user.ID == 0 {
 		return "", ErrFailedAuthentication
@@ -100,7 +101,9 @@ func authenticator(c *gin.Context) (interface{}, error) {
 }
 
 func authorizator(data interface{}, c *gin.Context) bool {
-	if v, ok := data.(*models.User); ok && v.ID > 0 {
+	if user, ok := data.(*models.User); ok && user.Email != "" {
+		c.Set("user", user)
+
 		return true
 	}
 

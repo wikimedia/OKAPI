@@ -2,6 +2,8 @@ package projects
 
 import (
 	"net/http"
+	"okapi/models/permissions"
+	"okapi/models/roles"
 
 	"okapi/middleware"
 
@@ -22,6 +24,11 @@ var Module = module.Module{
 			Path:    "",
 			Method:  http.MethodPost,
 			Handler: routes.Create,
+			Middleware: []func() gin.HandlerFunc{
+				middleware.Permissions(
+					middleware.PermissionsList{permissions.ProjectCreate},
+				),
+			},
 		},
 		{
 			Path:    "",
@@ -37,6 +44,11 @@ var Module = module.Module{
 			Path:    "/:id",
 			Method:  http.MethodDelete,
 			Handler: routes.Delete,
+			Middleware: []func() gin.HandlerFunc{
+				middleware.Permissions(
+					middleware.PermissionsList{permissions.ProjectDelete},
+				),
+			},
 		},
 		{
 			Path:    "/:id",
@@ -47,11 +59,23 @@ var Module = module.Module{
 			Path:    "/:id/download",
 			Method:  http.MethodGet,
 			Handler: routes.Download,
+			Middleware: []func() gin.HandlerFunc{
+				middleware.DownloadRestrictions(map[roles.Type]int{
+					roles.Client:     5,
+					roles.Subscriber: -1,
+					roles.Admin:      -1,
+				}),
+			},
 		},
 		{
 			Path:    "/:id/bundle",
 			Method:  http.MethodPost,
 			Handler: routes.Bundle,
+			Middleware: []func() gin.HandlerFunc{
+				middleware.Permissions(
+					middleware.PermissionsList{permissions.ProjectBundle},
+				),
+			},
 		},
 	},
 }

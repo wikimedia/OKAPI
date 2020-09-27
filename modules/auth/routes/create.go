@@ -11,6 +11,7 @@ import (
 )
 
 type userParams struct {
+	Username             string `from:"username" binding:"required,max=255"`
 	Email                string `form:"email" binding:"required,email"`
 	Password             string `form:"password" binding:"required,min=8"`
 	PasswordConfirmation string `form:"password_confirmation" json:"password_confirmation" binding:"required_with=Password,eqfield=Password"`
@@ -34,6 +35,7 @@ func Create(c *gin.Context) {
 
 	user := models.User{
 		Email:    params.Email,
+		Username: params.Username,
 		Password: hash,
 	}
 

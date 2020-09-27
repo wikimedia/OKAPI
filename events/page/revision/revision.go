@@ -16,6 +16,7 @@ type Payload struct {
 	Revision int
 	DBName   string
 	Redirect bool
+	NsID     int
 }
 
 // Event revision happened event

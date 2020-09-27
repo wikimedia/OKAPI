@@ -60,3 +60,16 @@ type RevisionsHistory struct {
 		} `json:"pages"`
 	} `json:"query"`
 }
+
+// Namespace single namespace
+type Namespace struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// Namespaces namespaces list response
+type Namespaces struct {
+	Query struct {
+		Namespaces map[int]Namespace
+	}
+}

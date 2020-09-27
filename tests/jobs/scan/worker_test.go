@@ -2,7 +2,6 @@ package scan
 
 import (
 	"okapi/jobs/scan"
-	"okapi/lib/db"
 	"okapi/lib/env"
 	"okapi/models"
 	"testing"
@@ -10,8 +9,8 @@ import (
 
 func TestWorker(t *testing.T) {
 	env.Context.Fill()
-	db := db.Client()
-	defer db.Close()
+	models.Init()
+	defer models.Close()
 
 	project := models.Project{
 		Lang:          "en",

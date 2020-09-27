@@ -18,7 +18,7 @@ type Options struct {
 func (opt *Options) Init(ctx *task.Context) error {
 	var err error
 	opt.Folder = ctx.State.GetString("folder", "")
-	opt.Limit, opt.Offset = ctx.State.GetInt("limit", *ctx.Cmd.Limit), ctx.State.GetInt("offset", *ctx.Cmd.Offset)
+	opt.Limit, opt.Offset = ctx.State.GetInt("limit", ctx.Params.Limit), ctx.State.GetInt("offset", ctx.Params.Offset)
 	opt.Position = opt.Offset
 
 	if ctx.Project.ID <= 0 {

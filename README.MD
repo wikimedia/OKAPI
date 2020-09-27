@@ -45,9 +45,9 @@ $ go run main.go -task=projects -workers=10
 
 4. Generating your first dump. We need to run 3 tasks in order to get things done. First one would be `scan` - this one gets pages info and metadata into the database. Second one is `pull` this one gets HTML files and puts them into the storage. And final one `bundle` this one generates dump archive and puts into the storage as well. Lets do a small project just to get things rolling (list of projects https://dumps.wikimedia.org/other/pagetitles/20200410/):
 ```bash
-$ go run main.go -task=scan -project=afwikibooks -workers=5
-$ go run main.go -task=pull -project=afwikibooks -workers=5
-$ go run main.go -task=bundle -project=afwikibooks -workers=5
+$ go run main.go -task=scan -db_name=afwikibooks -workers=5
+$ go run main.go -task=pull -db_name=afwikibooks -workers=5
+$ go run main.go -task=export -db_name=afwikibooks -workers=5
 ```
 
 5. Now let's spin up our queue server like this:
@@ -117,6 +117,26 @@ $ (sudo) docker exec -it <container_id> bash
 
 ```
 
+## Search:
+
+1. Elasticsearch support, you can use `search` module to make searches inside `page` and `project` index. To do this you need to add new `.env` variables to the file. First of all you need to add `ELASTIC_URL` to sync the data with elastic cluster. Also if you are using `Basic Auth` inside your elastic you can add `ELASTIC_USERNAME` and `ELASTIC_PASSWORD` to your file as well:
+```bash
+# ... your settings go here
+ELASTIC_URL=http://search_1:9200
+ELASTIC_USERNAME=okapi
+ELASTIC_PASSWORD=myPassword
+```
+
+2. We have file called `docker-compose.search.yaml` that has default elasticsearch configuration you can use with docker. You can run it by typing:
+```bash
+
+# start the search cluster and follow the logs
+(sudo) docker-compose -f docker-compose.search.yaml up
+
+# start in detached mode
+(sudo) docker-compose -f docker-compose.search.yaml up -d
+```
+
 ## HTML files storage
 To use local file storage for HTML files change local storage interface inside `lib/storage/local.go` inside `localClient()` function to your preferred method of storage:
 
@@ -153,3 +173,5 @@ https://github.com/go-redis/redis - Redis cache client
 https://github.com/joho/godotenv - `.env` support for golang
 
 https://github.com/gookit/event - event manager
+
+https://github.com/elastic/go-elasticsearch - elasticsearch client 

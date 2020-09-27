@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-redis/redis"
 	"okapi/lib/cache"
 )
 
@@ -29,14 +28,14 @@ func (client *Client) Get(name string) (string, error) {
 }
 
 // Set set key into state
-func (client *Client) Set(name string, value interface{}) *redis.StatusCmd {
+func (client *Client) Set(name string, value interface{}) error {
 	switch value.(type) {
 	case string:
-		return cache.Client().Set(client.getName(name), value, client.Expiration)
+		return cache.Client().Set(client.getName(name), value, client.Expiration).Err()
 	default:
 		storage, err := json.Marshal(&value)
 		if err == nil {
-			return cache.Client().Set(client.getName(name), string(storage), client.Expiration)
+			return cache.Client().Set(client.getName(name), string(storage), client.Expiration).Err()
 		}
 	}
 	return nil

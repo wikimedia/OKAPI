@@ -21,3 +21,23 @@ func (name Name) Add(values ...interface{}) {
 func (name Name) Pop(frequency time.Duration) []string {
 	return Pop(string(name), frequency)
 }
+
+// Subscribe set items to process
+func (name Name) Subscribe(ctx *Context, worker Worker) {
+	list := make(chan string)
+	defer close(list)
+
+	for i := 0; i < ctx.Workers; i++ {
+		go runWorker(ctx, list, worker)
+	}
+
+	for {
+		items := name.Pop(1 * time.Second)
+
+		for _, item := range items {
+			if item != getName(string(name)) {
+				list <- item
+			}
+		}
+	}
+}

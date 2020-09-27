@@ -1,8 +1,9 @@
 package jobs
 
 import (
-	"okapi/jobs/bundle"
 	"okapi/jobs/export"
+	"okapi/jobs/index"
+	"okapi/jobs/namespaces"
 	"okapi/jobs/projects"
 	"okapi/jobs/pull"
 	"okapi/jobs/scan"
@@ -11,9 +12,10 @@ import (
 
 // Tasks list of all available tasks
 var Tasks = map[task.Name]task.Task{
-	projects.Name: projects.Task,
-	export.Name:   export.Task,
-	bundle.Name:   bundle.Task,
-	scan.Name:     scan.Task,
-	pull.Name:     pull.Task,
+	namespaces.Name: namespaces.Task,
+	projects.Name:   projects.Task,
+	export.Name:     export.Task,
+	scan.Name:       scan.Task,
+	pull.Name:       pull.Task,
+	index.Name:      index.Task,
 }

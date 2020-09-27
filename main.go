@@ -6,6 +6,7 @@ import (
 	"okapi/helpers/logger"
 	"okapi/lib/cache"
 	"okapi/lib/cmd"
+	"okapi/lib/elastic"
 	"okapi/lib/env"
 	"okapi/lib/minifier"
 	"okapi/lib/ores"
@@ -16,9 +17,17 @@ import (
 	"os"
 )
 
+var servers = map[cmd.Server]func(){
+	cmd.Runner: boot.Runner,
+	cmd.Stream: boot.Stream,
+	cmd.Queue:  boot.Queue,
+	cmd.API:    boot.API,
+}
+
 var libs = []func() error{
 	cmd.Init,
 	env.Init,
+	models.Init,
 	cache.Init,
 	storage.Init,
 	minifier.Init,
@@ -27,6 +36,7 @@ var libs = []func() error{
 	validators.Init,
 	ores.Init,
 	logger.Init,
+	elastic.Init,
 }
 
 func startup() error {
@@ -44,8 +54,9 @@ func startup() error {
 }
 
 func cleanup() {
-	models.DB().Close()
-	cache.Client().Close()
+	models.Close()
+	cache.Close()
+	elastic.Close()
 	logger.Close()
 }
 
@@ -57,16 +68,9 @@ func main() {
 		logger.System.Panic("System startup failed", err.Error())
 	}
 
-	switch {
-	case *cmd.Context.Task != "":
+	if len(*cmd.Context.Task) > 0 {
 		boot.Task()
-	case *cmd.Context.Server == string(cmd.Runner):
-		boot.Runner()
-	case *cmd.Context.Server == string(cmd.Stream):
-		boot.Stream()
-	case *cmd.Context.Server == string(cmd.Queue):
-		boot.Queue()
-	case *cmd.Context.Server == string(cmd.API):
-		boot.API()
+	} else if serve, ok := servers[cmd.Server(*cmd.Context.Server)]; ok {
+		serve()
 	}
 }

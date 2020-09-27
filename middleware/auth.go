@@ -7,15 +7,15 @@ import (
 	"okapi/lib/env"
 )
 
-var users = gin.Accounts{}
+var authUsers = gin.Accounts{}
 
 // Auth middleware
 func Auth() gin.HandlerFunc {
-	if len(users) <= 0 {
+	if len(authUsers) <= 0 {
 		getAccounts()
 	}
 
-	return gin.BasicAuth(users)
+	return gin.BasicAuth(authUsers)
 }
 
 // Accounts setting accounts string
@@ -24,6 +24,6 @@ func getAccounts() {
 
 	for _, account := range accounts {
 		cred := strings.Split(account, ":")
-		users[cred[0]] = cred[1]
+		authUsers[cred[0]] = cred[1]
 	}
 }

@@ -3,7 +3,6 @@ version: "3.8"
 services: 
   app:
     build: ./
-    restart: always
     volumes:
       - ./:/var/www/app
     ports:
@@ -15,14 +14,12 @@ services:
       - db
   db:
     image: postgres:latest
-    restart: always
     ports:
       - 5433:5432
     env_file:
       - ./.env
   cache:
     image: redis:latest
-    restart: always
     command: bash -c "redis-server --requirepass ${CACHE_PASSWORD}"
     ports: 
       - 6379:6379
@@ -30,7 +27,6 @@ services:
       - ./.env
   log:
     image: graylog/graylog:3.3
-    restart: always
     env_file:
       - ./.env
     depends_on:
@@ -49,10 +45,8 @@ services:
       - 12201:12201/udp
   log_db:
     image: mongo:4.2
-    restart: always
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.10
-    restart: always
     environment:
       - http.host=0.0.0.0
       - transport.host=localhost

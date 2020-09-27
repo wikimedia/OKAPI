@@ -1,8 +1,9 @@
 package main
 
 import (
+	"okapi/helpers/logger"
 	"okapi/helpers/state"
-	"okapi/jobs/bundle"
+	"okapi/jobs/export"
 	"okapi/jobs/pull"
 	"okapi/jobs/scan"
 	"okapi/lib/cache"
@@ -18,12 +19,11 @@ import (
 func TestJobs(t *testing.T) {
 	cmd.Context.Parse()
 	env.Context.Parse(".env")
-	storage.Local.Client()
-	storage.Remote.Client()
-	db := models.DB()
-	ch := cache.Client()
-	defer db.Close()
-	defer ch.Close()
+	storage.Init()
+	models.Init()
+	cache.Init()
+	defer models.Close()
+	defer cache.Close()
 
 	project := models.Project{
 		LangName:      "English",
@@ -38,7 +38,6 @@ func TestJobs(t *testing.T) {
 	}
 
 	models.DB().Model(&project).Where("db_name = ?", project.DBName).SelectOrInsert()
-	cmd.Context.Project = &project.DBName
 	err := models.DB().Model(&project).Where("db_name = ?", project.DBName).Select()
 
 	if err != nil {
@@ -46,26 +45,37 @@ func TestJobs(t *testing.T) {
 		return
 	}
 
+	params := task.Params{
+		DBName:  project.DBName,
+		Restart: true,
+		Workers: 5,
+		Limit:   100,
+		Offset:  0,
+	}
+
 	tasks := []func() error{
 		func() error {
-			return task.Execute(scan.Task, &task.Context{
-				Cmd:     cmd.Context,
+			return task.Exec(scan.Task, &task.Context{
+				Params:  params,
 				State:   state.New("scan_"+project.DBName, 24*time.Hour),
 				Project: &project,
+				Log:     logger.Job,
 			})
 		},
 		func() error {
-			return task.Execute(pull.Task, &task.Context{
-				Cmd:     cmd.Context,
+			return task.Exec(pull.Task, &task.Context{
+				Params:  params,
 				State:   state.New("pull_"+project.DBName, 24*time.Hour),
 				Project: &project,
+				Log:     logger.Job,
 			})
 		},
 		func() error {
-			return task.Execute(bundle.Task, &task.Context{
-				Cmd:     cmd.Context,
-				State:   state.New("bundle_"+project.DBName, 24*time.Hour),
+			return task.Exec(export.Task, &task.Context{
+				Params:  params,
+				State:   state.New("export_"+project.DBName, 24*time.Hour),
 				Project: &project,
+				Log:     logger.Job,
 			})
 		},
 	}

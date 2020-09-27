@@ -5,6 +5,7 @@ import "strings"
 // Table struct to represent database table
 type Table struct {
 	Name        string
+	PrimaryKey  []string
 	Columns     []Column
 	Indexes     []Index
 	ForeignKeys []ForeignKey
@@ -16,6 +17,10 @@ func (table *Table) Create() string {
 
 	for _, column := range table.Columns {
 		sql += column.Define() + ","
+	}
+
+	if len(table.PrimaryKey) > 0 {
+		sql += "PRIMARY KEY (" + strings.Join(table.PrimaryKey, ",") + ")"
 	}
 
 	sql = strings.Trim(sql, `,`) + ");"

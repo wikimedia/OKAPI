@@ -8,6 +8,7 @@ const (
 	Steream Category = "stream"
 	Queue   Category = "queue"
 	Runner  Category = "runner"
+	Search  Category = "search"
 )
 
 // Category log category level

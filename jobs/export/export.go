@@ -3,6 +3,7 @@ package export
 import (
 	"archive/tar"
 	"okapi/helpers/bundle"
+	"okapi/helpers/damaging"
 	"okapi/helpers/projects"
 	"okapi/lib/task"
 	"runtime"
@@ -22,7 +23,13 @@ func Task(ctx *task.Context) (task.Pool, task.Worker, task.Finish, error) {
 		return nil, nil, nil, err
 	}
 
-	paths := make(chan string)
+	damaged, err := damaging.GetMap(ctx.Project.DBName)
+
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	paths := make(chan *path)
 	files := make(chan *file)
 
 	gzip := pgzip.NewWriter(project)
@@ -32,25 +39,22 @@ func Task(ctx *task.Context) (task.Pool, task.Worker, task.Finish, error) {
 	tar := tar.NewWriter(gzip)
 	defer tar.Close()
 
-	group := sync.WaitGroup{}
+	wg := sync.WaitGroup{}
 	path := projects.GetHTMLPath(ctx.Project)
 	length := len(path) + 1
 
-	for i := 0; i < *ctx.Cmd.Workers; i++ {
-		go readWorker(paths, length, files, &group)
+	for i := 0; i < ctx.Params.Workers; i++ {
+		go readWorker(ctx, paths, files, &wg)
 	}
 
-	go writeWorker(files, tar, &group)
+	go writeWorker(ctx, files, tar, &wg)
 
-	err = walkPath(path, paths)
+	wg.Add(1)
+	go walkPath(path, paths, &wg, length, damaged)
 
-	close(paths)
-	group.Wait()
+	wg.Wait()
 	close(files)
+	damaging.Delete(ctx.Project.DBName)
 
-	if err == nil {
-		err = bundle.Upload(ctx.Project)
-	}
-
-	return nil, nil, nil, err
+	return nil, nil, nil, bundle.Upload(ctx.Project)
 }

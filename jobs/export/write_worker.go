@@ -2,12 +2,13 @@ package export
 
 import (
 	"archive/tar"
+	"fmt"
 	"io"
-	"okapi/helpers/logger"
+	"okapi/lib/task"
 	"sync"
 )
 
-func writeWorker(files chan *file, tr *tar.Writer, wg *sync.WaitGroup) {
+func writeWorker(ctx *task.Context, files chan *file, tr *tar.Writer, wg *sync.WaitGroup) {
 	for file := range files {
 		err := tr.WriteHeader(&tar.Header{
 			Name: file.name,
@@ -16,15 +17,16 @@ func writeWorker(files chan *file, tr *tar.Writer, wg *sync.WaitGroup) {
 		})
 
 		if err != nil {
-			logger.Job.Error("Worker write failed", err.Error())
+			ctx.Log.Error("write failed", err.Error())
 		}
 
 		_, err = io.Copy(tr, file.buffer)
 
 		if err != nil {
-			logger.Job.Error("Write worker failed", err.Error())
+			ctx.Log.Error("write failed", err.Error())
 		}
 
 		wg.Done()
+		ctx.Log.Info("written a file", fmt.Sprintf("file: '%s'", file.name))
 	}
 }

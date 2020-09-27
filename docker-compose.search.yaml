@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  search_1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    container_name: search_1
+    environment:
+      - node.name=search_1
+      - cluster.name=okapi
+      - discovery.seed_hosts=search_2,search_3
+      - cluster.initial_master_nodes=search_1,search_2,search_3
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+  search_2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    container_name: search_2
+    environment:
+      - node.name=search_2
+      - cluster.name=okapi
+      - discovery.seed_hosts=search_1,search_3
+      - cluster.initial_master_nodes=search_1,search_2,search_3
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+  search_3:
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+      container_name: search_3
+      environment:
+        - node.name=search_3
+        - cluster.name=okapi
+        - discovery.seed_hosts=search_1,search_2
+        - cluster.initial_master_nodes=search_1,search_2,search_3
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1

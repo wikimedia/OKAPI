@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	project_index "okapi/indexes/project"
 	"okapi/lib/env"
 	"okapi/lib/ores"
 	"okapi/lib/schedule"
@@ -58,6 +59,22 @@ func (project *Project) GetThreshold(oresModel ores.Model) *float64 {
 	return nil
 }
 
+// Index get indexed data structure
+func (project *Project) Index() *project_index.Index {
+	return &project_index.Index{
+		ID:            project.ID,
+		DBName:        project.DBName,
+		SiteCode:      project.SiteCode,
+		SiteURL:       project.SiteURL,
+		Lang:          project.Lang,
+		LangName:      project.LangName,
+		LangLocalName: project.LangLocalName,
+		Size:          project.Size,
+		Active:        project.Active,
+		UpdatedAt:     project.UpdatedAt,
+	}
+}
+
 var _ pg.AfterSelectHook = (*Project)(nil)
 
 // AfterSelect model hook
@@ -92,4 +109,28 @@ var _ pg.BeforeInsertHook = (*Project)(nil)
 func (project *Project) BeforeInsert(ctx context.Context) (context.Context, error) {
 	project.OnInsert()
 	return ctx, nil
+}
+
+var _ pg.AfterInsertHook = (*Project)(nil)
+
+// AfterInsert model hook
+func (project *Project) AfterInsert(ctx context.Context) error {
+	project.Index().Update()
+	return nil
+}
+
+var _ pg.AfterUpdateHook = (*Project)(nil)
+
+// AfterUpdate model hook
+func (project *Project) AfterUpdate(ctx context.Context) error {
+	project.Index().Update()
+	return nil
+}
+
+var _ pg.AfterDeleteHook = (*Project)(nil)
+
+// AfterDelete model hook
+func (project *Project) AfterDelete(ctx context.Context) error {
+	project_index.Delete(project.ID)
+	return nil
 }

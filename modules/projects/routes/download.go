@@ -3,7 +3,9 @@ package routes
 import (
 	"fmt"
 	"net/http"
+	"okapi/helpers/download"
 	"okapi/helpers/exception"
+	user_helper "okapi/helpers/user"
 	"okapi/lib/storage"
 	"okapi/models"
 	"strconv"
@@ -46,5 +48,13 @@ func Download(c *gin.Context) {
 		return
 	}
 
+	user, err := user_helper.FromContext(c)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, exception.Message(err))
+		return
+	}
+
+	download.NewCounter(user).Inc()
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }

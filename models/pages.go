@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	page_index "okapi/indexes/page"
 	"okapi/lib/ores"
 
 	"github.com/go-pg/pg/v9"
@@ -12,6 +13,7 @@ type Page struct {
 	baseModel
 	Title     string      `pg:"type:varchar(750),notnull" json:"title"`
 	ProjectID int         `pg:",notnull" json:"project_id"`
+	NsID      int         `pg:",use_zero" json:"ns_id"`
 	Path      string      `pg:"type:varchar(1000)" json:"path"`
 	SiteURL   string      `pg:"type:varchar(255),notnull" json:"site_url"`
 	Revision  int         `pg:",use_zero" json:"revision"`
@@ -61,6 +63,31 @@ func (page *Page) SetScore(rev int, model ores.Model, score ores.Score) {
 	page.Scores = newScore
 }
 
+// Index get indexed data structure
+func (page *Page) Index() *page_index.Index {
+	index := &page_index.Index{
+		ID:        page.ID,
+		Title:     page.Title,
+		NsID:      page.NsID,
+		SiteURL:   page.SiteURL,
+		UpdatedAt: page.UpdatedAt,
+	}
+
+	if page.Project == nil || page.Project.ID <= 0 {
+		page.Project = &Project{}
+		db.Model(page.Project).
+			Where("id = ?", page.ProjectID).
+			Select()
+	}
+
+	index.SiteCode = page.Project.SiteCode
+	index.Lang = page.Project.Lang
+	index.LangName = page.Project.LangName
+	index.LangLocalName = page.Project.LangLocalName
+	index.ProjectID = page.ProjectID
+	return index
+}
+
 var _ pg.BeforeUpdateHook = (*Page)(nil)
 
 // BeforeUpdate model hook
@@ -75,4 +102,28 @@ var _ pg.BeforeInsertHook = (*Page)(nil)
 func (page *Page) BeforeInsert(ctx context.Context) (context.Context, error) {
 	page.OnInsert()
 	return ctx, nil
+}
+
+var _ pg.AfterInsertHook = (*Page)(nil)
+
+// AfterInsert model hook
+func (page *Page) AfterInsert(ctx context.Context) error {
+	page.Index().Update()
+	return nil
+}
+
+var _ pg.AfterUpdateHook = (*Page)(nil)
+
+// AfterUpdate model hook
+func (page *Page) AfterUpdate(ctx context.Context) error {
+	page.Index().Update()
+	return nil
+}
+
+var _ pg.AfterDeleteHook = (*Page)(nil)
+
+// AfterDelete model hook
+func (page *Page) AfterDelete(ctx context.Context) error {
+	page_index.Delete(page.ID)
+	return nil
 }

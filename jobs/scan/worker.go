@@ -44,6 +44,7 @@ func Worker(id int, payload task.Payload) (string, map[string]interface{}, error
 		Select()
 
 	page.Title = wikiPage.Title
+	page.NsID = wikiPage.Namespace
 	current := time.Now()
 	diff := current.Sub(wikiPage.Timestamp)
 
@@ -90,7 +91,7 @@ func scoreRevision(page *models.Page, revision int, currentTime time.Time) error
 	}
 
 	if status != http.StatusOK {
-		return fmt.Errorf("Error: response failed with status code -> '%d'", status)
+		return fmt.Errorf("response failed with status code -> '%d'", status)
 	}
 
 	revs := []int{}
@@ -124,5 +125,5 @@ func scoreRevision(page *models.Page, revision int, currentTime time.Time) error
 		}
 	}
 
-	return fmt.Errorf("Error: all scoring methods failed")
+	return fmt.Errorf("all scoring methods failed")
 }

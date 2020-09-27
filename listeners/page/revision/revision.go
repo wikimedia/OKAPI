@@ -38,6 +38,7 @@ func Listener(e event.Event) error {
 		page.Revision = 0
 		page.SiteURL = project.SiteURL
 		page.ProjectID = project.ID
+		page.NsID = payload.NsID
 		err = models.Save(&page)
 	}
 

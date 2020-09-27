@@ -20,11 +20,6 @@ func Pool(ctx *task.Context, options *Options) func() ([]task.Payload, error) {
 			query.Where("project_id = ?", ctx.Project.ID)
 		}
 
-		if len(pages) > 0 {
-			ctx.State.Set("limit", options.Limit)
-			ctx.State.Set("offset", options.Offset)
-		}
-
 		options.Offset += options.Limit
 		err := query.Order("id asc").Select()
 		if err != nil {

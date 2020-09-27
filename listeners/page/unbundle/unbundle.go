@@ -3,7 +3,8 @@ package unbundle
 import (
 	page_unbundle "okapi/events/page/unbundle"
 	"okapi/helpers/damaging"
-	"okapi/lib/runner"
+	"okapi/jobs/export"
+	"okapi/lib/run"
 
 	"github.com/gookit/event"
 )
@@ -16,16 +17,16 @@ func Init() {
 // Listener event handler
 func Listener(e event.Event) error {
 	payload := e.Data()["payload"].(page_unbundle.Payload)
-	err := damaging.Add(payload.Revision, payload.DBName)
+	err := damaging.Add(payload.Title, payload.DBName)
 
 	if err != nil {
 		return err
 	}
 
-	command := runner.Command{
-		Task:   "bundle",
+	cmd := run.Cmd{
+		Task:   string(export.Name),
 		DBName: payload.DBName,
 	}
 
-	return command.Exec()
+	return cmd.Enqueue()
 }

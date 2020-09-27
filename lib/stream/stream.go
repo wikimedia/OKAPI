@@ -2,11 +2,8 @@ package stream
 
 import (
 	"fmt"
-	"sync"
-
-	"okapi/helpers/logger"
-	"okapi/lib/cmd"
 	"okapi/lib/env"
+	"sync"
 
 	"github.com/r3labs/sse"
 )
@@ -17,22 +14,25 @@ type Client struct {
 	Handler func(event *sse.Event)
 }
 
-// Subscribe method for subscribing to streams
-func Subscribe(client *Client) {
-	wg := sync.WaitGroup{}
+// Subscribe from events stream
+func (client *Client) Subscribe(ctx *Context) {
+	url := env.Context.StreamURL + client.Path
+	http := sse.NewClient(url)
 	events := make(chan *sse.Event)
-	httpClient := sse.NewClient(env.Context.StreamURL + client.Path)
-	err := httpClient.SubscribeChan("messages", events)
+	wg := sync.WaitGroup{}
+
+	err := http.SubscribeChan("messages", events)
 
 	if err == nil {
 		wg.Add(1)
-		httpClient.OnDisconnect(func(c *sse.Client) {
-			httpClient.Unsubscribe(events)
+
+		http.OnDisconnect(func(c *sse.Client) {
+			http.Unsubscribe(events)
 			wg.Done()
-			logger.Steream.Error(fmt.Sprintf("Stream: '%s' stream was disconnected!", c.URL), "")
+			ctx.Log.Error("stream disconnected", fmt.Sprintf("url: '%s'", url))
 		})
 
-		for i := 1; i <= *cmd.Context.Workers; i++ {
+		for i := 1; i <= ctx.Workers; i++ {
 			go func() {
 				for event := range events {
 					client.Handler(event)
@@ -40,7 +40,7 @@ func Subscribe(client *Client) {
 			}()
 		}
 	} else {
-		logger.Steream.Error(fmt.Sprintf("Stream '%s' connection failed", client.Path), err.Error())
+		ctx.Log.Error("stream failed to connect", fmt.Sprintf("url: '%s'", url))
 	}
 
 	wg.Wait()

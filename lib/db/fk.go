@@ -7,6 +7,7 @@ type Delete string
 const (
 	Cascade  Delete = "CASCADE"
 	Restrict Delete = "RESTRICT"
+	NoAction Delete = "NO ACTION"
 )
 
 // ForeignKey constraint struct

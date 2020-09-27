@@ -1,6 +1,7 @@
 package boot
 
 import (
+	"okapi/helpers/logger"
 	"okapi/lib/cmd"
 	"okapi/lib/queue"
 	"okapi/processors"
@@ -8,8 +9,13 @@ import (
 
 // Queue function to start queue server
 func Queue() {
-	for subscriber, worker := range processors.Workers {
-		go queue.Subscribe(subscriber, worker, *cmd.Context.Workers)
+	ctx := queue.Context{
+		Workers: *cmd.Context.Workers,
+		Log:     logger.Queue,
+	}
+
+	for queue, worker := range processors.Workers {
+		go queue.Subscribe(&ctx, worker)
 	}
 
 	select {}

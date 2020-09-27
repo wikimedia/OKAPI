@@ -7,6 +7,7 @@ import (
 	"okapi/modules/example"
 	"okapi/modules/pages"
 	"okapi/modules/projects"
+	"okapi/modules/search"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,6 +17,7 @@ var modules = []module.Module{
 	projects.Module,
 	pages.Module,
 	auth.Module,
+	search.Module,
 }
 
 // Init initialize all modules

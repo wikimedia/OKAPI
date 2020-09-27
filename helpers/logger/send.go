@@ -28,8 +28,8 @@ func Init() error {
 
 // Close function to close sending channel
 func Close() {
-	wg.Wait()
 	close(messages)
+	wg.Wait()
 }
 
 // Send message to graylog
@@ -73,7 +73,7 @@ func sender() {
 			}
 		}
 
-		wg.Done()
 		send(req)
+		wg.Done()
 	}
 }
