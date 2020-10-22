@@ -8,13 +8,16 @@ type Model interface {
 // Save function to save model data
 func Save(model Model) error {
 	if model.IsUpdate() {
-		return DB().Update(model)
+		_, err := DB().Model(model).WherePK().Update()
+		return err
 	}
 
-	return DB().Insert(model)
+	_, err := DB().Model(model).Insert()
+	return err
 }
 
 // Delete function to delete the model
 func Delete(model Model) error {
-	return DB().Delete(model)
+	_, err := DB().Model(model).WherePK().Delete()
+	return err
 }

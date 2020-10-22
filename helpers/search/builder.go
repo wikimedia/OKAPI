@@ -1,8 +1,9 @@
 package search
 
 import (
-	"github.com/go-pg/pg/v9/orm"
 	"okapi/models"
+
+	"github.com/go-pg/pg/v10/orm"
 )
 
 // Builder search class builder

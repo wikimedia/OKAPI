@@ -3,6 +3,7 @@ package listeners
 import (
 	page_delete "okapi/listeners/page/delete"
 	page_revision "okapi/listeners/page/revision"
+	page_score "okapi/listeners/page/score"
 	page_unbundle "okapi/listeners/page/unbundle"
 	project_bundle "okapi/listeners/project/bundle"
 )
@@ -12,6 +13,7 @@ func Init() error {
 	listeners := []func(){
 		page_delete.Init,
 		page_revision.Init,
+		page_score.Init,
 		page_unbundle.Init,
 		project_bundle.Init,
 	}

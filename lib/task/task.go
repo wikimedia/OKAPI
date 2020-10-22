@@ -15,9 +15,8 @@ type Task func(ctx *Context) (Pool, Worker, Finish, error)
 func Exec(cmd Task, ctx *Context) error {
 	if ctx.Params.Restart {
 		ctx.State.Clear()
-	} else {
-		defer ctx.State.Clear()
 	}
+	defer ctx.State.Clear()
 
 	pool, worker, finish, err := cmd(ctx)
 
@@ -61,9 +60,9 @@ func runWorker(ctx *Context, id int, handler Worker, wg *sync.WaitGroup, jobs ch
 		message, info, err := handler(id, job)
 
 		if err != nil {
-			ctx.Log.Error(fmt.Sprintf("worker #%d error", id), err.Error(), info)
+			ctx.Log.Error(fmt.Sprintf("worker #%d error db_name: '%s'", id, ctx.Params.DBName), err.Error(), info)
 		} else {
-			ctx.Log.Info(fmt.Sprintf("worker #%d processed", id), message)
+			ctx.Log.Info(fmt.Sprintf("worker #%d processed db_name: '%s'", id, ctx.Params.DBName), message)
 		}
 	}
 }

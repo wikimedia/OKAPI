@@ -1,7 +1,7 @@
 package filter
 
 import (
-	"github.com/go-pg/pg/v9/orm"
+	"github.com/go-pg/pg/v10/orm"
 )
 
 // Like filter is used to query DB by text chunk

@@ -8,7 +8,7 @@ import (
 	"okapi/lib/schedule"
 	"time"
 
-	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v10"
 )
 
 // Project struct for "projects" table representation
@@ -64,6 +64,7 @@ func (project *Project) Index() *project_index.Index {
 	return &project_index.Index{
 		ID:            project.ID,
 		DBName:        project.DBName,
+		SiteName:      project.SiteName,
 		SiteCode:      project.SiteCode,
 		SiteURL:       project.SiteURL,
 		Lang:          project.Lang,

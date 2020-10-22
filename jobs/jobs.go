@@ -7,6 +7,8 @@ import (
 	"okapi/jobs/projects"
 	"okapi/jobs/pull"
 	"okapi/jobs/scan"
+	"okapi/jobs/search"
+	"okapi/jobs/upload"
 	"okapi/lib/task"
 )
 
@@ -14,6 +16,8 @@ import (
 var Tasks = map[task.Name]task.Task{
 	namespaces.Name: namespaces.Task,
 	projects.Name:   projects.Task,
+	search.Name:     search.Task,
+	upload.Name:     upload.Task,
 	export.Name:     export.Task,
 	scan.Name:       scan.Task,
 	pull.Name:       pull.Task,

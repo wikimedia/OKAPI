@@ -10,6 +10,7 @@ const (
 	PageDelete   Name = "page_delete"
 	PagePull     Name = "page_pull"
 	PageRevision Name = "page_revision"
+	PageScore    Name = "page_score"
 )
 
 // Add push to the queue by name

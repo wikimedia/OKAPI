@@ -58,7 +58,11 @@ func Worker(id int, payload task.Payload) (string, map[string]interface{}, error
 		return "", info, fmt.Errorf(message+", %s", page.Title, page.ID, err)
 	}
 
-	err = models.Save(page)
+	if page.ID > 0 {
+		_, err = models.DB().Model(page).Where("id = ? and project_id = ?", page.ID, page.ProjectID).Update()
+	} else {
+		_, err = models.DB().Model(page).Insert()
+	}
 
 	if err != nil {
 		return "", info, fmt.Errorf(message+", %s", page.Title, page.ID, err)

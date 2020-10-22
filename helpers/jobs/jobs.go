@@ -59,6 +59,7 @@ func FromCLI(params *cmd.Params) (job task.Task, ctx task.Context, err error) {
 			Workers: *params.Workers,
 			Limit:   *params.Limit,
 			Offset:  *params.Offset,
+			Pointer: *params.Pointer,
 		},
 	}
 

@@ -61,6 +61,21 @@ type RevisionsHistory struct {
 	} `json:"query"`
 }
 
+// RevisionWikitext wikitext by revision id
+type RevisionWikitext struct {
+	Query struct {
+		Pages []struct {
+			Revisions []struct {
+				Slots struct {
+					Main struct {
+						Content string `json:"content"`
+					} `json:"main"`
+				} `json:"slots"`
+			} `json:"revisions"`
+		} `json:"pages"`
+	} `json:"query"`
+}
+
 // Namespace single namespace
 type Namespace struct {
 	ID   int    `json:"id"`

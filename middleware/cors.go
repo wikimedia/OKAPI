@@ -10,7 +10,7 @@ import (
 var methods = []string{
 	http.MethodGet,
 	http.MethodPost,
-	http.MethodPost,
+	http.MethodDelete,
 	http.MethodPut,
 	http.MethodOptions,
 }

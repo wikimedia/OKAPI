@@ -9,6 +9,7 @@ type Table struct {
 	Columns     []Column
 	Indexes     []Index
 	ForeignKeys []ForeignKey
+	Partition   *Partition
 }
 
 // Create function to create table sql
@@ -23,7 +24,13 @@ func (table *Table) Create() string {
 		sql += "PRIMARY KEY (" + strings.Join(table.PrimaryKey, ",") + ")"
 	}
 
-	sql = strings.Trim(sql, `,`) + ");"
+	sql = strings.Trim(sql, `,`)
+
+	if table.Partition != nil {
+		sql += ") PARTITION by " + string(table.Partition.By) + "(" + table.Partition.Field + ");"
+	} else {
+		sql += ");"
+	}
 
 	for _, index := range table.Indexes {
 		sql += index.Create()

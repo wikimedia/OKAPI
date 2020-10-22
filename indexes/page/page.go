@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// Name document colection name
-const Name string = "page"
+// Name document collection name
+const Name string = "page_v1"
 
 // Index search model for page
 type Index struct {

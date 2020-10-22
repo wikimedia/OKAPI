@@ -35,6 +35,7 @@ func Runner() {
 		err = runner.Connect(cmd)
 
 		if err != nil {
+			cmd.Failed(err)
 			logger.Runner.Error("can't connect to remote", err.Error())
 			continue
 		}
@@ -42,6 +43,7 @@ func Runner() {
 		job, ctx, err := jobs.FromCMD(cmd, lib_cmd.Context)
 
 		if err != nil {
+			cmd.Failed(err)
 			logger.Runner.Error("job init failed", err.Error())
 			continue
 		}

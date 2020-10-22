@@ -8,7 +8,7 @@ import (
 
 // Pool function for queriing pages from database inside the task
 func Pool(ctx *task.Context) func() ([]task.Payload, error) {
-	limit, offset := ctx.State.GetInt("limit", ctx.Params.Limit), ctx.State.GetInt("offset", ctx.Params.Offset)
+	limit, pointer := ctx.State.GetInt("limit", ctx.Params.Limit), ctx.State.GetInt("pointer", ctx.Params.Pointer)
 
 	return func() ([]task.Payload, error) {
 		queue := []task.Payload{}
@@ -16,14 +16,13 @@ func Pool(ctx *task.Context) func() ([]task.Payload, error) {
 
 		query := models.DB().
 			Model(&pages).
-			Limit(limit).
-			Offset(offset)
+			Where("id > ?", pointer).
+			Limit(limit)
 
 		if ctx.Project.ID > 0 {
 			query.Where("project_id = ?", ctx.Project.ID)
 		}
 
-		offset += limit
 		err := query.Order("id asc").Select()
 
 		if err != nil {
@@ -32,6 +31,11 @@ func Pool(ctx *task.Context) func() ([]task.Payload, error) {
 
 		if len(pages) <= 0 {
 			return queue, nil
+		}
+
+		if len(pages) > 0 {
+			ctx.State.Set("pointer", pointer)
+			pointer = pages[len(pages)-1].ID
 		}
 
 		length := int(math.Ceil(float64(len(pages)) / float64(ctx.Params.Workers)))

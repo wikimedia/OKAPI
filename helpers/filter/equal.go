@@ -1,7 +1,7 @@
 package filter
 
 import (
-	"github.com/go-pg/pg/v9/orm"
+	"github.com/go-pg/pg/v10/orm"
 )
 
 // Equal filter is used to query DB by the exact column value

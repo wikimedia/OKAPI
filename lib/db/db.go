@@ -1,8 +1,9 @@
 package db
 
 import (
-	"github.com/go-pg/pg/v9"
 	"okapi/lib/env"
+
+	"github.com/go-pg/pg/v10"
 )
 
 // Client returns new db connection (don't forget to close it with defer)

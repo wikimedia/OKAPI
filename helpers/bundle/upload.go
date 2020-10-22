@@ -36,7 +36,7 @@ func Upload(project *models.Project) error {
 		return err
 	}
 
-	project.Size = ((float64)(reader.Size / 1024)) / 1024
+	project.Size = ((float64)(reader.Size) / 1024) / 1024
 	project.Path = remotePath
 	project.DumpedAt = time.Now()
 
@@ -46,5 +46,9 @@ func Upload(project *models.Project) error {
 		WherePK().
 		Update()
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	return os.Remove(path)
 }

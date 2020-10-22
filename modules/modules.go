@@ -4,7 +4,9 @@ import (
 	"okapi/lib/module"
 	"okapi/middleware"
 	"okapi/modules/auth"
+	"okapi/modules/captcha"
 	"okapi/modules/example"
+	"okapi/modules/exports"
 	"okapi/modules/pages"
 	"okapi/modules/projects"
 	"okapi/modules/search"
@@ -18,6 +20,8 @@ var modules = []module.Module{
 	pages.Module,
 	auth.Module,
 	search.Module,
+	exports.Module,
+	captcha.Module,
 }
 
 // Init initialize all modules

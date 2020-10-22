@@ -2,6 +2,7 @@ package validators
 
 import (
 	"fmt"
+	"okapi/validators/export_type"
 	"okapi/validators/threshold"
 
 	"github.com/gin-gonic/gin/binding"
@@ -11,7 +12,8 @@ import (
 // Init function to initialize all the validators
 func Init() error {
 	validators := map[string]validator.Func{
-		"threshold": threshold.Validator,
+		"threshold":   threshold.Validator,
+		"export_type": export_type.Validator,
 	}
 
 	v, ok := binding.Validator.Engine().(*validator.Validate)

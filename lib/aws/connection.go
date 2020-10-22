@@ -10,6 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
+const maxUploadParts = 20000
+const partSize = 1024 * 1024 * 5 * 2
+
 // Options AWS options
 type Options struct {
 	Bucket string
@@ -32,8 +35,11 @@ func NewConnection() *Connection {
 	}))
 
 	return &Connection{
-		S3:         s3.New(session),
-		Uploader:   s3manager.NewUploader(session),
+		S3: s3.New(session),
+		Uploader: s3manager.NewUploader(session, func(upl *s3manager.Uploader) {
+			upl.MaxUploadParts = maxUploadParts
+			upl.PartSize = partSize
+		}),
 		Downloader: s3manager.NewDownloader(session),
 		Options: Options{
 			Bucket: env.Context.AWSBucket,

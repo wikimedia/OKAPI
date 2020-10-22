@@ -51,6 +51,10 @@ func (store *Storage) Link(path string, expire time.Duration) (string, error) {
 
 // Delete delete file from storage
 func (store *Storage) Delete(path string) error {
+	if len(path) <= 0 {
+		return nil
+	}
+
 	return os.Remove(getPath(path))
 }
 

@@ -4,13 +4,13 @@ import (
 	"context"
 	"okapi/models/roles"
 
-	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v10"
 )
 
 // User struct for "users" table representation
 type User struct {
 	baseModel
-	Email    string     `pg:"type:varchar(255),unique,notnull" json:"email"`
+	Email    string     `pg:"type:varchar(255),unique,notnull" json:"email" binding:"email"`
 	Username string     `pg:"type:varchar(255),unique,notnull" json:"username"`
 	Password string     `pg:"type:varchar(255),notnull" json:"-"`
 	RoleID   roles.Type `pg:",notnull" json:"role_id"`

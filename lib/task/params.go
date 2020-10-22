@@ -5,6 +5,7 @@ type Params struct {
 	DBName  string
 	Restart bool
 	Workers int
+	Pointer int
 	Offset  int
 	Limit   int
 }

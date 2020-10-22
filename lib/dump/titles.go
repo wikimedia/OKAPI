@@ -3,20 +3,14 @@ package dump
 import (
 	"bytes"
 	"compress/gzip"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"okapi/tests/setup"
 	"strings"
 )
 
 // Titles get project titles
 func Titles(dbName string, folder string) ([]string, error) {
-	if flag.Lookup("test.v") != nil {
-		return setup.Titles, nil
-	}
-
 	res, err := Client().R().Get("/other/pagetitles/" + folder + "/" + dbName + "-" + folder + "-all-titles-in-ns-0.gz")
 
 	if err != nil {

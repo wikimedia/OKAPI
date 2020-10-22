@@ -5,7 +5,7 @@ import (
 	"okapi/models/permissions"
 	"okapi/models/roles"
 
-	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v10"
 )
 
 // Role struct for "roles" table representation

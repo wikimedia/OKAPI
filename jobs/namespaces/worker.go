@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"okapi/lib/wiki"
-	"strings"
 
 	"okapi/lib/task"
 	"okapi/models"
@@ -48,28 +47,12 @@ func Worker(ctx *task.Context) task.Worker {
 				Select()
 
 			if err != nil {
-				models.DB().Insert(&namespace)
+				models.DB().Model(&namespace).Insert()
 			} else {
 				models.DB().
 					Model(&namespace).
 					Where("id = ? and lang = ?", ns.ID, project.Lang).
 					Update()
-			}
-
-			title := strings.ReplaceAll(ns.Name, " ", "_")
-
-			if len(title) > 0 && ns.ID != 0 {
-				resp, err := models.
-					DB().
-					Exec("update pages set ns_id = ? where title like ? and project_id = ?", ns.ID, title+":%", project.ID)
-
-				if err != nil {
-					ctx.Log.Error("update query failed failed", err.Error())
-				} else {
-					ctx.Log.Info(
-						"project ns update",
-						fmt.Sprintf("project: '%s', namespace: '%s', ns_id: '%d', rows: '%d'", project.DBName, title, ns.ID, resp.RowsAffected()))
-				}
 			}
 		}
 

@@ -17,6 +17,11 @@ const (
 // Model ORES assestment model
 type Model string
 
+// CanScore check if database can be scored by model
+func (model Model) CanScore(dbName string) bool {
+	return cache.Client().SIsMember(getCacheKey(dbName), string(model)).Val()
+}
+
 // ScoreOne score one by predefined model
 func (model Model) ScoreOne(dbName string, revision int) (*Score, error) {
 	return ScoreOne(dbName, revision, model)
@@ -41,6 +46,12 @@ type Score struct {
 
 // Scores model scores
 type Scores map[int]map[Model]Score
+
+// Stream stream scores
+type Stream struct {
+	ModelName   Model `json:"model_name"`
+	Probability Probability
+}
 
 // ScoreOne score one model by revision
 func ScoreOne(dbName string, revision int, model Model) (*Score, error) {

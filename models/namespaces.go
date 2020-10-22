@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v10"
 )
 
 // Namespace wiki specific namespace

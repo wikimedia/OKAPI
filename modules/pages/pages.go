@@ -2,7 +2,6 @@ package pages
 
 import (
 	"net/http"
-
 	"okapi/lib/module"
 	"okapi/middleware"
 	"okapi/modules/pages/routes"

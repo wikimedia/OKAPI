@@ -12,7 +12,7 @@ func init() {
 	columns := []db.Column{
 		{
 			Name: "id",
-			Type: "SERIAL PRIMARY KEY",
+			Type: "bigserial not null",
 		},
 		{
 			Name: "title",
@@ -58,6 +58,10 @@ func init() {
 	indexes := []db.Index{
 		{
 			TableName: tableName,
+			Columns:   []string{"id"},
+		},
+		{
+			TableName: tableName,
 			Columns:   []string{"title"},
 		},
 		{
@@ -85,19 +89,51 @@ func init() {
 		Columns:     columns,
 		ForeignKeys: foreignKeys,
 		Indexes:     indexes,
+		PrimaryKey:  []string{"id", "project_id"},
+		Partition: &db.Partition{
+			Field: "project_id",
+			By:    db.ListPartition,
+		},
 	}
 
 	up := func(db orm.DB) error {
 		_, err := db.Exec(table.Create())
+
+		if err != nil {
+			return err
+		}
+
+		_, err = db.Exec("CREATE TABLE " + table.Name + "_default PARTITION OF " + table.Name + " DEFAULT")
+
 		return err
 	}
 
 	down := func(db orm.DB) error {
-		_, err := db.Exec(table.Drop())
+		projects := []struct {
+			DBName string
+		}{}
+
+		_, err := db.Query(&projects, "select db_name from projects;")
+
+		if err != nil {
+			return err
+		}
+
+		for _, project := range projects {
+			_, err = db.Exec("drop table if exists " + table.Name + "_" + project.DBName)
+
+			if err != nil {
+				return err
+			}
+		}
+
+		_, err = db.Exec(table.Drop())
 		return err
 	}
 
-	opts := migrations.MigrationOptions{}
+	opts := migrations.MigrationOptions{
+		DisableTransaction: true,
+	}
 
 	migrations.Register("20200525121350_create_pages_table", up, down, opts)
 }

@@ -3,7 +3,7 @@ package models
 import (
 	pg_db "okapi/lib/db"
 
-	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v10"
 )
 
 var db *pg.DB

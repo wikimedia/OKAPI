@@ -9,7 +9,7 @@ import (
 	"okapi/helpers/search"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-pg/pg/v9/orm"
+	"github.com/go-pg/pg/v10/orm"
 )
 
 // List list all entities example

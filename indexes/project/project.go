@@ -14,6 +14,7 @@ const Name string = "project"
 type Index struct {
 	ID            int       `json:"-"`
 	DBName        string    `json:"db_name"`
+	SiteName      string    `json:"site_name"`
 	SiteCode      string    `json:"site_code"`
 	SiteURL       string    `json:"site_url"`
 	Lang          string    `json:"lang"`

@@ -5,22 +5,23 @@ import (
 	page_index "okapi/indexes/page"
 	"okapi/lib/ores"
 
-	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v10"
 )
 
 // Page struct for "pages" table representation
 type Page struct {
 	baseModel
-	Title     string      `pg:"type:varchar(750),notnull" json:"title"`
-	ProjectID int         `pg:",notnull" json:"project_id"`
-	NsID      int         `pg:",use_zero" json:"ns_id"`
-	Path      string      `pg:"type:varchar(1000)" json:"path"`
-	SiteURL   string      `pg:"type:varchar(255),notnull" json:"site_url"`
-	Revision  int         `pg:",use_zero" json:"revision"`
-	Revisions [6]int      `pg:",array,notnull" json:"revisions"`
-	Updates   int         `pg:",use_zero" json:"updates"`
-	Scores    ores.Scores `pg:"type:jsonb,notnull" json:"scores,omitempty"`
-	Project   *Project    `json:"project"`
+	Title        string      `pg:"type:varchar(750),notnull" json:"title"`
+	ProjectID    int         `pg:",notnull" json:"project_id"`
+	NsID         int         `pg:",use_zero" json:"ns_id"`
+	Path         string      `pg:"type:varchar(1000)" json:"path"`
+	WikitextPath string      `pg:"type:varchar(1000)" json:"wikitext_path"`
+	SiteURL      string      `pg:"type:varchar(255),notnull" json:"site_url"`
+	Revision     int         `pg:",use_zero" json:"revision"`
+	Revisions    [6]int      `pg:",array,notnull" json:"revisions"`
+	Updates      int         `pg:",use_zero" json:"updates"`
+	Scores       ores.Scores `pg:"type:jsonb,notnull" json:"scores,omitempty"`
+	Project      *Project    `pg:"rel:has-one" json:"project"`
 }
 
 // SetRevision add new revision to the list

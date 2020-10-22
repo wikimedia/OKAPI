@@ -16,13 +16,18 @@ var Module = module.Module{
 	Routes: []module.Route{
 		{
 			Path:    "/pages",
-			Method:  http.MethodGet,
+			Method:  http.MethodPost,
 			Handler: routes.Pages,
 		},
 		{
 			Path:    "/projects",
-			Method:  http.MethodGet,
+			Method:  http.MethodPost,
 			Handler: routes.Projects,
+		},
+		{
+			Path:    "/options/:lang",
+			Method:  http.MethodGet,
+			Handler: routes.Options,
 		},
 	},
 }
