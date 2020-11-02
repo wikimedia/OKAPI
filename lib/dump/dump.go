@@ -1,10 +1,9 @@
 package dump
 
 import (
-	"time"
+	"okapi/lib/env"
 
 	"github.com/go-resty/resty/v2"
-	"okapi/lib/env"
 )
 
 var client *resty.Client
@@ -17,8 +16,7 @@ func Client() *resty.Client {
 
 	client = resty.New().
 		SetHostURL("https://dumps.wikimedia.org").
-		SetHeader("Api-User-Agent", env.Context.UserAgent).
-		SetTimeout(1 * time.Minute)
+		SetHeader("Api-User-Agent", env.Context.UserAgent)
 
 	return client
 }

@@ -35,6 +35,10 @@ type Params struct {
 	ElasticURL      string
 	ElasticUsername string
 	ElasticPassword string
+	RunnerHost      string
+	RunnerPort      string
+	RunnerCert      string
+	RunnerKey       string
 }
 
 // Parse environment variables
@@ -78,6 +82,10 @@ func (params *Params) Fill() {
 	params.ElasticURL = os.Getenv("ELASTIC_URL")
 	params.ElasticUsername = os.Getenv("ELASTIC_USERNAME")
 	params.ElasticPassword = os.Getenv("ELASTIC_PASSWORD")
+	params.RunnerHost = os.Getenv("RUNNER_HOST")
+	params.RunnerPort = os.Getenv("RUNNER_PORT")
+	params.RunnerCert = os.Getenv("RUNNER_CERT")
+	params.RunnerKey = os.Getenv("RUNNER_KEY")
 }
 
 // Init function to initialize on startup

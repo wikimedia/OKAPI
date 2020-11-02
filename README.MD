@@ -82,6 +82,8 @@ POSTGRES_USER=admin
 POSTGRES_PASSWORD=test_password
 POSTGRES_DB=okapi
 CACHE_ADDR=cache:6379
+CACHE_HOST=cache
+CACHE_PORT=6379
 CACHE_PASSWORD=testpass123
 DB_ADDR=db:5432
 DB_NAME=okapi
@@ -102,7 +104,14 @@ GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6
 GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
 GRAYLOG_PASSWORD=supersecretpassword
 VOLUME_MOUNT_PATH=tmp
+ELASTIC_URL=http://search:9200
+ELASTIC_USERNAME=okapi
+ELASTIC_PASSWORD=myPassword
 API_ORES_URL=https://ores.wikimedia.org/v3
+ORES_HOST=https://ores.wikimedia.org/
+ORES_USER_AGENT=okapi@wikimedia.org
+RUNNER_HOST=localhost
+RUNNER_PORT=50051
 ```
 
 3. Then we can just run `docker-compose up` and we should be able to run api requests.
@@ -122,7 +131,7 @@ $ (sudo) docker exec -it <container_id> bash
 1. Elasticsearch support, you can use `search` module to make searches inside `page` and `project` index. To do this you need to add new `.env` variables to the file. First of all you need to add `ELASTIC_URL` to sync the data with elastic cluster. Also if you are using `Basic Auth` inside your elastic you can add `ELASTIC_USERNAME` and `ELASTIC_PASSWORD` to your file as well:
 ```bash
 # ... your settings go here
-ELASTIC_URL=http://search_1:9200
+ELASTIC_URL=http://search:9200
 ELASTIC_USERNAME=okapi
 ELASTIC_PASSWORD=myPassword
 ```
@@ -145,6 +154,25 @@ func localClient() Connection {
 	return local.NewStorage() // Change this library
 }
 ```
+
+## Runner gRPC server authentication (TLS/SSL):
+To use TLS/SSL authentication and data encryption between runner and clients you need to obtain or generate SSL certificate. Self signed certificate can be obtained like this:
+```bash 
+openssl req -newkey rsa:4096 \
+            -x509 \
+            -sha256 \
+            -days 3650 \
+            -nodes \
+            -out example.crt \
+            -keyout example.key
+```
+Then you need to provide path to your certificate in the env file:
+```
+# ... your settings go here
+RUNNER_CERT=tmp/auth/example.crt
+RUNNER_KEY=tmp/auth/example.key
+```
+That's it you are ready to go.
 
 ## API documentation:
 

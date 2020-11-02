@@ -1,0 +1,43 @@
+test:
+  stage: test
+  image: docker/compose:latest
+  tags:
+    - docker
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - chmod +x ci/env.sh
+    - ci/env.sh
+  script:
+    - docker-compose -f ci/docker-compose.yaml build
+    - docker-compose -f ci/docker-compose.yaml up -d
+    - docker-compose -f ci/docker-compose.yaml exec -T app go build main.go
+    - docker-compose -f ci/docker-compose.yaml exec -T app go test ./tests/... -v
+  only:
+    - ci
+    - master
+    - dev
+
+deploy:
+  stage: deploy
+  image: alpine
+  tags:
+    - docker
+  before_script:
+    - apk add openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+  script:
+    - ssh -o StrictHostKeyChecking=no $SSH_REMOTE_USER@$SSH_REMOTE_SERVER "sudo mkdir -p $SSH_REMOTE_DIRECTORY; sudo chown -R $SSH_REMOTE_USER $SSH_REMOTE_DIRECTORY; cd &SSH_REMOTE_DIRECTORY; sudo git pull origin master;"
+    - ssh -o StrictHostKeyChecking=no $SSH_REMOTE_USER@$SSH_REMOTE_SERVER "cd $SSH_REMOTE_DIRECTORY; [ -f .env ] && sudo docker-compose -f docker-compose.prod.yaml stop &&  sudo docker-compose -f docker-compose.prod.yaml up -d;"
+  dependencies:
+    - test
+  only:
+    - cd
+    - master

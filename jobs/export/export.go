@@ -44,6 +44,7 @@ func Task(ctx *task.Context) (task.Pool, task.Worker, task.Finish, error) {
 	length := len(path) + 1
 
 	for i := 0; i < ctx.Params.Workers; i++ {
+		wg.Add(1)
 		go readWorker(ctx, paths, files, &wg)
 	}
 

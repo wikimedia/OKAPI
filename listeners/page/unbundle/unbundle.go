@@ -1,10 +1,12 @@
 package unbundle
 
 import (
+	"context"
 	page_unbundle "okapi/events/page/unbundle"
 	"okapi/helpers/damaging"
 	"okapi/jobs/export"
 	"okapi/lib/run"
+	"okapi/protos/runner"
 
 	"github.com/gookit/event"
 )
@@ -23,10 +25,16 @@ func Listener(e event.Event) error {
 		return err
 	}
 
-	cmd := run.Cmd{
-		Task:   string(export.Name),
-		DBName: payload.DBName,
+	client, err := run.Client()
+
+	if err != nil {
+		return err
 	}
 
-	return cmd.Enqueue()
+	_, err = client.Enqueue(context.Background(), &runner.Request{
+		Task:     string(export.Name),
+		Database: payload.DBName,
+	})
+
+	return err
 }

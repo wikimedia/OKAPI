@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 	"okapi/helpers/exception"
 	user_helper "okapi/helpers/user"
@@ -18,7 +17,7 @@ type createURLParams struct {
 
 // Create create project or page export
 func Create(c *gin.Context) {
-	var params createURLParams
+	params := createURLParams{}
 	err := c.ShouldBindUri(&params)
 
 	if err != nil {
@@ -33,23 +32,22 @@ func Create(c *gin.Context) {
 		return
 	}
 
+	resource := exports.Types[params.ResourceType]
 	export := models.Export{
 		UserID:       user.ID,
 		ResourceType: string(params.ResourceType),
 		ResourceID:   params.ID,
 	}
 
-	resource := exports.Types[params.ResourceType]
-	resourceExists, _ := models.DB().Model(resource).Where("id = ?", params.ID).Exists()
-
-	if !resourceExists {
-		c.AbortWithStatusJSON(http.StatusNotFound, exception.Message(fmt.Errorf("Resource does not exist")))
+	if err = models.DB().Model(resource).Where("id = ?", params.ID).Select(); err != nil {
+		c.AbortWithStatusJSON(http.StatusNotFound, exception.Message(err))
 		return
 	}
 
 	if err = models.Save(&export); err != nil {
-		c.JSON(http.StatusInternalServerError, exception.Message(err))
-	} else {
-		c.JSON(http.StatusOK, &export)
+		c.JSON(http.StatusBadRequest, exception.Message(err))
+		return
 	}
+
+	c.JSON(http.StatusOK, resource)
 }

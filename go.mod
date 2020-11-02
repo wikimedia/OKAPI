@@ -15,6 +15,7 @@ require (
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/go-resty/resty/v2 v2.3.0
+	github.com/golang/protobuf v1.4.3
 	github.com/gookit/event v1.0.3
 	github.com/joho/godotenv v1.3.0
 	github.com/karrick/godirwalk v1.16.1
@@ -27,6 +28,11 @@ require (
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
 	golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee
+	golang.org/x/net v0.0.0-20201026091529-146b70c837a4 // indirect
+	golang.org/x/sys v0.0.0-20201024232916-9f70ab9862d5 // indirect
 	golang.org/x/tools v0.0.0-20200207183749-b753a1ba74fa // indirect
+	google.golang.org/genproto v0.0.0-20201022181438-0ff5f38871d5 // indirect
+	google.golang.org/grpc v1.33.1
+	google.golang.org/protobuf v1.25.0
 	gopkg.in/gookit/color.v1 v1.1.6
 )

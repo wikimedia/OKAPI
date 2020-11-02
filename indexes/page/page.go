@@ -8,7 +8,7 @@ import (
 )
 
 // Name document collection name
-const Name string = "page_v1"
+const Name string = "page"
 
 // Index search model for page
 type Index struct {

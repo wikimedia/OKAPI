@@ -16,10 +16,11 @@ const lang string = "en"
 func Task(ctx *task.Context) (task.Pool, task.Worker, task.Finish, error) {
 	fields := map[string]interface{}{}
 	getters := map[string]func(lang string) (interface{}, error){
-		"ns_id":     getNamespaces,
-		"site_code": getSiteCodes,
-		"lang":      getLangs,
+		"lang_name": getLangNames,
 		"site_name": getSiteNames,
+		"site_code": getSiteCodes,
+		"ns_id":     getNamespaces,
+		"lang":      getLangs,
 	}
 
 	for fieldName, getValues := range getters {

@@ -10,8 +10,6 @@ import (
 )
 
 func readWorker(ctx *task.Context, paths chan *path, files chan *file, wg *sync.WaitGroup) {
-	wg.Add(1)
-
 	for path := range paths {
 		buffer, err := readHTML(path.full)
 

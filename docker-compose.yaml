@@ -7,11 +7,14 @@ services:
       - ./:/var/www/app
     ports:
       - 4000:3000
+      - 50051:50051
     env_file: 
       - ./.env
     depends_on:
       - cache
       - db
+      - search
+      - proxy
   db:
     image: postgres:latest
     command:
@@ -22,6 +25,12 @@ services:
       - 5433:5432
     env_file:
       - ./.env
+  proxy:
+    image: okapis/proxy:1.0
+    ports:
+      - 4040:4040
+    env_file: 
+    - ./.env    
   cache:
     image: redis:latest
     command: bash -c "redis-server --requirepass ${CACHE_PASSWORD}"
@@ -29,6 +38,20 @@ services:
       - 6379:6379
     env_file: 
       - ./.env
+  search:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    environment:
+      - node.name=search
+      - cluster.name=okapi
+      - cluster.initial_master_nodes=search
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
   log:
     image: graylog/graylog:3.3
     env_file:

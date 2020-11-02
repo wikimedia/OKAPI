@@ -1,9 +1,11 @@
 package bundle
 
 import (
+	"context"
 	project_bundle "okapi/events/project/bundle"
 	"okapi/jobs/export"
 	"okapi/lib/run"
+	"okapi/protos/runner"
 
 	"github.com/gookit/event"
 )
@@ -16,11 +18,16 @@ func Init() {
 // Listener event handler
 func Listener(e event.Event) error {
 	payload := e.Data()["payload"].(project_bundle.Payload)
+	client, err := run.Client()
 
-	cmd := run.Cmd{
-		Task:   string(export.Name),
-		DBName: payload.DBName,
+	if err != nil {
+		return err
 	}
 
-	return cmd.Enqueue()
+	_, err = client.Enqueue(context.Background(), &runner.Request{
+		Task:     string(export.Name),
+		Database: payload.DBName,
+	})
+
+	return err
 }

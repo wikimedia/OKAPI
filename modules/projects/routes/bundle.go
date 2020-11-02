@@ -29,7 +29,7 @@ func Bundle(c *gin.Context) {
 		return
 	}
 
-	event.Fire(project_bundle.Name, map[string]interface{}{
+	go event.Fire(project_bundle.Name, map[string]interface{}{
 		"payload": project_bundle.Payload{
 			DBName: model.DBName,
 		},

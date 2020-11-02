@@ -1,11 +1,12 @@
 package export_type
 
 import (
-	"github.com/go-playground/validator/v10"
 	"okapi/models/exports"
+
+	"github.com/go-playground/validator/v10"
 )
 
-// Validator function to validate ORES threshold
+// Validator function for export resource type
 func Validator(fl validator.FieldLevel) bool {
 	exists := true
 	var exportType exports.Resource

@@ -21,7 +21,7 @@ func Worker(payload string) (string, map[string]interface{}, error) {
 	}
 
 	if len(pages) <= 0 {
-		return "", workerInfo, fmt.Errorf("Index out of range")
+		return "", workerInfo, fmt.Errorf("index out of range")
 	}
 
 	message, info, err := pull.Worker(1, pages[0])

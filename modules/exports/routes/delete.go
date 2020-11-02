@@ -6,7 +6,6 @@ import (
 	"okapi/helpers/success"
 	user_helper "okapi/helpers/user"
 	"okapi/models"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
@@ -22,7 +21,7 @@ type deleteBodyParams struct {
 
 // Delete delete exports by id or array of ids
 func Delete(c *gin.Context) {
-	var urlParams deleteURLParams
+	urlParams := deleteURLParams{}
 	err := c.ShouldBindUri(&urlParams)
 
 	if err != nil {
@@ -37,7 +36,7 @@ func Delete(c *gin.Context) {
 		return
 	}
 
-	var bodyParams deleteBodyParams
+	bodyParams := deleteBodyParams{}
 	err = c.ShouldBindJSON(&bodyParams)
 
 	if err != nil {
@@ -45,18 +44,19 @@ func Delete(c *gin.Context) {
 		return
 	}
 
-	var exportIDs []string
-
+	exportIDs := []int{}
 	for _, exportID := range bodyParams.ResourceIDs {
-		exportIDs = append(exportIDs, strconv.Itoa(exportID))
+		exportIDs = append(exportIDs, exportID)
 	}
 
-	sql := "delete from exports where "
-	sql += "user_id = ? and "
-	sql += "resource_type = ? and "
-	sql += "resource_id in (?)"
-
-	_, err = models.DB().Exec(sql, strconv.Itoa(user.ID), urlParams.ResourceType, pg.In(exportIDs))
+	_, err = models.DB().
+		Model(&models.Export{}).
+		Where(
+			"user_id = ? and resource_type = ? and resource_id in (?)",
+			user.ID,
+			urlParams.ResourceType,
+			pg.In(exportIDs)).
+		Delete()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, exception.Message(err))

@@ -1,14 +1,20 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/go-pg/pg/v10"
 	"net/http"
 	"okapi/helpers/exception"
 	user_helper "okapi/helpers/user"
 	"okapi/models"
 	"okapi/models/exports"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-pg/pg/v10"
 )
+
+type listResponse struct {
+	Pages    []models.Page    `json:"page"`
+	Projects []models.Project `json:"project"`
+}
 
 // List exports list grouped by resource type
 func List(c *gin.Context) {
@@ -20,6 +26,10 @@ func List(c *gin.Context) {
 	}
 
 	userExports := []models.Export{}
+	ids := map[exports.Resource][]int{
+		exports.Page:    []int{},
+		exports.Project: []int{},
+	}
 
 	models.DB().
 		Model(&userExports).
@@ -27,28 +37,21 @@ func List(c *gin.Context) {
 		Where("user_id = ?", user.ID).
 		Select()
 
-	projectIDs := []int{}
-	pageIDs := []int{}
-
 	for _, userExport := range userExports {
-		switch exports.Resource(userExport.ResourceType) {
-		case exports.Project:
-			projectIDs = append(projectIDs, userExport.ResourceID)
-		case exports.Page:
-			pageIDs = append(pageIDs, userExport.ResourceID)
+		exportType := exports.Resource(userExport.ResourceType)
+
+		if _, ok := ids[exports.Resource(userExport.ResourceType)]; ok {
+			ids[exportType] = append(ids[exportType], userExport.ResourceID)
 		}
 	}
 
-	projects := []models.Project{}
-	pages := []models.Page{}
-
-	models.DB().Model(&projects).Where("id in (?)", pg.In(projectIDs)).Select()
-	models.DB().Model(&pages).Where("id in (?)", pg.In(pageIDs)).Select()
-
-	res := map[exports.Resource]interface{}{
-		exports.Project: projects,
-		exports.Page:    pages,
+	res := listResponse{
+		Projects: []models.Project{},
+		Pages:    []models.Page{},
 	}
+
+	models.DB().Model(&res.Projects).Where("id in (?)", pg.In(ids[exports.Project])).Select()
+	models.DB().Model(&res.Pages).Where("id in (?)", pg.In(ids[exports.Page])).Select()
 
 	c.JSON(http.StatusOK, res)
 }

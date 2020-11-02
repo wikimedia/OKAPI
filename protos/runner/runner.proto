@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "grpc/runner";
+
+service Runner {
+  rpc Execute(Request) returns (stream Response);
+  rpc Enqueue(Request) returns (Response);
+}
+
+message Request {
+  string task = 1;
+  string database = 2;
+}
+
+message Response {
+  string status = 1;
+  string info = 2;
+}

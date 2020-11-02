@@ -1,57 +1,46 @@
 package run
 
 import (
-	"encoding/json"
+	"okapi/lib/env"
+	"okapi/protos/runner"
 	"time"
 
-	"github.com/go-redis/redis"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
-// NewRunner create new runner with given cache client
-func NewRunner(sub *redis.Client) *Runner {
-	return &Runner{
-		sub: sub,
+const timeout = time.Second * 10
+
+var client runner.RunnerClient
+
+// Client get runner instance
+func Client() (runner.RunnerClient, error) {
+	if client != nil {
+		return client, nil
 	}
-}
 
-// Runner main execution unit
-type Runner struct {
-	sub *redis.Client
-}
+	params := []grpc.DialOption{
+		grpc.WithBlock(),
+		grpc.WithTimeout(timeout),
+	}
 
-// NewCmd create cmd from redis message
-func (run *Runner) NewCmd(msg *redis.Message) (*Cmd, error) {
-	cmd := &Cmd{}
-	err := json.Unmarshal([]byte(msg.Payload), cmd)
+	creds, err := credentials.NewClientTLSFromFile(env.Context.RunnerCert, "")
 
 	if err == nil {
-		cmd.Namespace = channel + "/" + cmd.Task + "/" + cmd.DBName
+		params = append(params, grpc.WithTransportCredentials(creds))
+	} else {
+		params = append(params, grpc.WithInsecure())
 	}
 
-	return cmd, err
-}
+	conn, err := grpc.Dial(
+		env.Context.RunnerHost+":"+env.Context.RunnerPort,
+		params...)
 
-// Channel get messages channel
-func (run *Runner) Channel() <-chan *redis.Message {
-	return run.sub.Subscribe(channel).Channel()
-}
-
-// Connect connect to subscriber
-func (run *Runner) Connect(cmd *Cmd) error {
-	if cmd.Subscriber {
-		retry := retries
-
-		for {
-			time.Sleep(1 * time.Second)
-			channels, err := run.sub.PubSubChannels(cmd.Namespace).Result()
-
-			if err != nil || len(channels) > 0 || retry <= 0 {
-				return err
-			}
-
-			retry--
-		}
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	client = runner.NewRunnerClient(conn)
+
+	return client, nil
 }

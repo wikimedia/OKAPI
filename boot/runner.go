@@ -1,71 +1,53 @@
 package boot
 
 import (
-	"okapi/helpers/jobs"
+	"net"
+	"okapi/grpc/runner"
 	"okapi/helpers/logger"
-	"okapi/lib/cache"
-	lib_cmd "okapi/lib/cmd"
-	"okapi/lib/run"
-	"okapi/lib/task"
-	"os"
-	"os/signal"
+	"okapi/lib/env"
+	"time"
 
-	"github.com/go-redis/redis"
+	protos "okapi/protos/runner"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/keepalive"
 )
 
-// Runner function to run tasks through pub/sub
-func Runner() {
-	sub := cache.NewClient()
-	runner := run.NewRunner(sub)
+const timeout = 72 * time.Hour
+const timeoutCheck = 12 * time.Hour
 
-	run.SetOnline()
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt)
-	signal.Notify(signals, os.Kill)
-	go interrupt(signals, sub)
-
-	for msg := range runner.Channel() {
-		cmd, err := runner.NewCmd(msg)
-
-		if err != nil {
-			logger.Runner.Error("cmd parse failed", err.Error())
-			continue
-		}
-
-		err = runner.Connect(cmd)
-
-		if err != nil {
-			cmd.Failed(err)
-			logger.Runner.Error("can't connect to remote", err.Error())
-			continue
-		}
-
-		job, ctx, err := jobs.FromCMD(cmd, lib_cmd.Context)
-
-		if err != nil {
-			cmd.Failed(err)
-			logger.Runner.Error("job init failed", err.Error())
-			continue
-		}
-
-		go execute(job, &ctx, cmd)
-	}
+var params = []grpc.ServerOption{
+	grpc.ConnectionTimeout(timeout),
+	grpc.KeepaliveParams(keepalive.ServerParameters{
+		MaxConnectionIdle:     timeout,
+		MaxConnectionAge:      timeout,
+		MaxConnectionAgeGrace: timeout,
+		Time:                  timeoutCheck,
+		Timeout:               timeoutCheck,
+	}),
 }
 
-func execute(job task.Task, ctx *task.Context, cmd *run.Cmd) {
-	defer cmd.Success()
-	err := task.Exec(job, ctx)
+// Runner gRPC server for task execution
+func Runner() {
+	msg := "runner startup server failed"
+	lis, err := net.Listen("tcp", ":"+env.Context.RunnerPort)
 
 	if err != nil {
-		logger.Runner.Error("job exec failed", err.Error())
-		cmd.Failed(err)
+		logger.System.Error(msg, err.Error())
+		return
 	}
-}
 
-func interrupt(signals chan os.Signal, sub *redis.Client) {
-	for range signals {
-		run.SetOffline()
-		sub.Close()
-		os.Exit(0)
+	creds, err := credentials.NewServerTLSFromFile(env.Context.RunnerCert, env.Context.RunnerKey)
+
+	if err == nil {
+		params = append(params, grpc.Creds(creds))
+	}
+
+	srv := grpc.NewServer(params...)
+	protos.RegisterRunnerServer(srv, &runner.Server{})
+
+	if err := srv.Serve(lis); err != nil {
+		logger.System.Error(msg, err.Error())
 	}
 }

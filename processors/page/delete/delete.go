@@ -26,12 +26,12 @@ func Worker(payload string) (string, map[string]interface{}, error) {
 
 	page := pages[0]
 
-	err = storage.Local.Client().Delete(page.Path)
+	err = models.Delete(page)
 	if err != nil {
 		return "", workerInfo, fmt.Errorf(message+", %s", page.Title, page.ID, err)
 	}
 
-	err = models.Delete(page)
+	err = storage.Local.Client().Delete(page.Path)
 	if err != nil {
 		return "", workerInfo, fmt.Errorf(message+", %s", page.Title, page.ID, err)
 	}
