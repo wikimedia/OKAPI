@@ -128,22 +128,12 @@ $ (sudo) docker exec -it <container_id> bash
 
 ## Search:
 
-1. Elasticsearch support, you can use `search` module to make searches inside `page` and `project` index. To do this you need to add new `.env` variables to the file. First of all you need to add `ELASTIC_URL` to sync the data with elastic cluster. Also if you are using `Basic Auth` inside your elastic you can add `ELASTIC_USERNAME` and `ELASTIC_PASSWORD` to your file as well:
+Elasticsearch support, you can use `search` module to make searches inside `page` and `project` index. To do this you need to add new `.env` variables to the file. First of all you need to add `ELASTIC_URL` to sync the data with elastic cluster. Also if you are using `Basic Auth` inside your elastic you can add `ELASTIC_USERNAME` and `ELASTIC_PASSWORD` to your file as well:
 ```bash
 # ... your settings go here
 ELASTIC_URL=http://search:9200
 ELASTIC_USERNAME=okapi
 ELASTIC_PASSWORD=myPassword
-```
-
-2. We have file called `docker-compose.search.yaml` that has default elasticsearch configuration you can use with docker. You can run it by typing:
-```bash
-
-# start the search cluster and follow the logs
-(sudo) docker-compose -f docker-compose.search.yaml up
-
-# start in detached mode
-(sudo) docker-compose -f docker-compose.search.yaml up -d
 ```
 
 ## HTML files storage
