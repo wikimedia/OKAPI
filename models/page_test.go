@@ -30,7 +30,7 @@ func TestPagesBeforeUpdate(t *testing.T) {
 	assert.NotEqual(t, updatedAt, page.UpdatedAt)
 }
 
-func TestPageSerRevision(t *testing.T) {
+func TestPageSetRevision(t *testing.T) {
 	page := new(Page)
 	testCases := []struct {
 		rev int
