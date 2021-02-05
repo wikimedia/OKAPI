@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package search;
+
+option go_package = "okapi-data-service/protos";
+
+// Search service method definitions
+service Search {
+  rpc Aggregate(AggregateRequest) returns (AggregateResponse);
+}
+
+// Aggregate io description
+message AggregateRequest {}
+
+message AggregateResponse {}

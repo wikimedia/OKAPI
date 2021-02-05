@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package pages;
+
+option go_package = "okapi-data-service/protos";
+
+// Pages service method definitions
+service Pages {
+  rpc Index(IndexRequest) returns (IndexResponse);
+  rpc Fetch(FetchRequest) returns (FetchResponse);
+  rpc Pull(PullRequest) returns (PullResponse);
+  rpc Export(ExportReqest) returns (ExportResponse);
+}
+
+// Index io description
+message IndexRequest {}
+
+message IndexResponse {
+  int32 total = 1;
+  int32 errors = 2;
+}
+
+// Scan io description
+message FetchRequest {
+  int32 workers = 1;
+  int32 batch = 2;
+  string db_name = 3;
+}
+
+message FetchResponse {
+  int32 total = 1;
+  int32 errors = 2;
+  int32 redirects = 3;
+}
+
+// Pull io description
+message PullRequest {
+  int32 workers = 1;
+  int32 limit = 2;
+  string db_name = 3;
+}
+
+message PullResponse {
+  int32 total = 1;
+  int32 errors = 2;
+}
+
+
+// Export io description
+enum ContentType {
+  JSON = 0;
+  HTML = 1;
+  WIKITEXT = 2;
+}
+
+message ExportReqest {
+  string db_name = 1;
+  ContentType content_type = 2;
+  int32 workers = 3;
+}
+
+message ExportResponse {
+  int32 total = 1;
+  int32 errors = 2;
+}

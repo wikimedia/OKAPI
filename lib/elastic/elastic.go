@@ -1,41 +1,35 @@
 package elastic
 
 import (
-	"okapi/lib/env"
+	"errors"
+	"okapi-data-service/lib/env"
 
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/elastic/go-elasticsearch/v7/esapi"
 )
 
+// ErrDuplicateClient duplication of elastic client
+var ErrDuplicateClient = errors.New("duplicate elastic client")
+
 var client *elasticsearch.Client
-var indexes = make(chan *esapi.IndexRequest)
-var deletes = make(chan *esapi.DeleteRequest)
 
-// Init function to initialize elastic client
-func Init() (err error) {
-	client, err = elasticsearch.NewClient(elasticsearch.Config{
-		Username: env.Context.ElasticUsername,
-		Password: env.Context.ElasticPassword,
-		Addresses: []string{
-			env.Context.ElasticURL,
-		},
-	})
-
-	if err == nil {
-		go indexer()
-		go deleter()
-	}
-
-	return err
-}
-
-// Client getter for elastic seacrch client
+// Client get elasticsearch
 func Client() *elasticsearch.Client {
 	return client
 }
 
-// Close function to close index channel
-func Close() {
-	close(indexes)
-	wg.Wait()
+// Init initialize new elastic instance
+func Init() error {
+	var err error
+
+	if client != nil {
+		return ErrDuplicateClient
+	}
+
+	client, err = elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: []string{
+			env.ElasticURL,
+		},
+	})
+
+	return err
 }

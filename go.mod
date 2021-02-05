@@ -1,38 +1,29 @@
-module okapi
+module okapi-data-service
 
-go 1.14
+go 1.15
 
 require (
-	github.com/PuerkitoBio/goquery v1.5.1
-	github.com/appleboy/gin-jwt/v2 v2.6.3
-	github.com/aws/aws-sdk-go v1.31.5
-	github.com/dchest/captcha v0.0.0-20200903113550-03f5f0333e1f
-	github.com/elastic/go-elasticsearch/v7 v7.9.0
-	github.com/gin-gonic/gin v1.6.3
-	github.com/go-pg/pg/v10 v10.4.0
-	github.com/go-pg/pg/v9 v9.1.6
-	github.com/go-pg/urlstruct v0.4.0 // indirect
-	github.com/go-playground/validator/v10 v10.3.0
-	github.com/go-redis/redis v6.15.8+incompatible
-	github.com/go-resty/resty/v2 v2.3.0
+	github.com/aws/aws-sdk-go v1.37.0
+	github.com/elastic/go-elasticsearch/v7 v7.10.0
+	github.com/go-pg/pg/v10 v10.7.4
+	github.com/go-redis/redis/v8 v8.4.9
 	github.com/golang/protobuf v1.4.3
-	github.com/gookit/event v1.0.3
 	github.com/joho/godotenv v1.3.0
-	github.com/karrick/godirwalk v1.16.1
-	github.com/klauspost/compress v1.10.11 // indirect
-	github.com/klauspost/pgzip v1.2.4
-	github.com/r3labs/sse v0.0.0-20200310095403-ee05428e4d0e
-	github.com/robinjoseph08/go-pg-migrations/v2 v2.0.1
-	github.com/segmentio/encoding v0.1.15 // indirect
-	github.com/tdewolff/minify v2.3.6+incompatible
-	github.com/tdewolff/parse v2.3.4+incompatible // indirect
-	github.com/tdewolff/test v1.0.6 // indirect
-	golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee
-	golang.org/x/net v0.0.0-20201026091529-146b70c837a4 // indirect
-	golang.org/x/sys v0.0.0-20201024232916-9f70ab9862d5 // indirect
-	golang.org/x/tools v0.0.0-20200207183749-b753a1ba74fa // indirect
-	google.golang.org/genproto v0.0.0-20201022181438-0ff5f38871d5 // indirect
-	google.golang.org/grpc v1.33.1
+	github.com/klauspost/compress v1.11.7 // indirect
+	github.com/klauspost/pgzip v1.2.5
+	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/protsack-stephan/dev-toolkit v1.1.1
+	github.com/protsack-stephan/go-pg-migrations-helper v1.0.1
+	github.com/protsack-stephan/mediawiki-api-client v1.1.2
+	github.com/protsack-stephan/mediawiki-dumps-client v1.0.1
+	github.com/protsack-stephan/mediawiki-eventstream-client v0.0.0-20201209180241-de60d70674f0
+	github.com/protsack-stephan/mediawiki-ores-client v1.1.1
+	github.com/robinjoseph08/go-pg-migrations/v3 v3.0.0
+	github.com/stretchr/testify v1.7.0
+	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
+	golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4 // indirect
+	golang.org/x/text v0.3.4 // indirect
+	google.golang.org/genproto v0.0.0-20201214200347-8c77b98c765d // indirect
+	google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf v1.25.0
-	gopkg.in/gookit/color.v1 v1.1.6
 )

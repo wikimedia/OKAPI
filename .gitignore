@@ -9,6 +9,7 @@
 
 # IDE - VSCode
 .vscode/
+*.session.sql
 
 # System Files
 .DS_Store
@@ -18,14 +19,14 @@ Thumbs.db
 .env
 
 #builds
+/server/main
+/streams/main
+/queues/main
 /main
-/okapi
 /tmp
 /gin-bin
+/test.go
 
 #tmp
-/tests/tmp/*
-!/tests/tmp/.gitkeep
-
-/tests/jobs/pull/tmp/*
-!/tests/jobs/pull/tmp/.gitkeep
+/.vol
+/server/.vol

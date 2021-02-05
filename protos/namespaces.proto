@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package namespaces;
+
+option go_package = "okapi-data-service/protos";
+
+// Namespaces service method definitions
+service Namespaces {
+  rpc Fetch(FetchRequest) returns (FetchResponse);
+}
+
+// Fetch io description
+message FetchRequest {}
+
+message FetchResponse {}

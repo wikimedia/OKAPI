@@ -1,0 +1,16 @@
+{
+  "batchcomplete": true,
+  "query": {
+      "pages": [
+          {
+              "ns": 0,
+              "title": "%s",
+              "missing": true,
+              "contentmodel": "wikitext",
+              "pagelanguage": "en",
+              "pagelanguagehtmlcode": "en",
+              "pagelanguagedir": "ltr"
+          }
+      ]
+  }
+}
