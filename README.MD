@@ -3,15 +3,7 @@
 Thi file contains short installation guide for engineers to start working with the system. As this is gRPC server by large you might need client to work with the application, we recommend [BloomRPC](https://github.com/uw-labs/bloomrpc) as fast and easy to use app for development.
 
 ## Getting started:
-1. First of all after repository was cloned make sure you ran `git submodule` initialization commands:
-```bash
-git submodule init
-```
-```bash
-git submodule update
-```
-
-2. Create `.env` file in the project root (you need Redis, Postgress server to start the application, alternatively look at docker spin up section below). Here's an example of the file: 
+1. Create `.env` file in the project root (you need Redis, Postgress server to start the application, alternatively look at docker spin up section below). Here's an example of the file: 
 
 ```bash
 # App settings
