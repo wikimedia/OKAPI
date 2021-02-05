@@ -9,15 +9,19 @@ Thi file contains short installation guide for engineers to start working with t
 # App settings
 AWS_REGION=us-east-2
 AWS_BUCKET=test-s3-bucket
-AWS_KEY=asdasijoj12312ojasdap1p/asd
-AWS_ID=FFDWQIRJ123
+AWS_KEY=asdasad1ojasdap1p/asd
+AWS_ID=FFDDDDIRJ123
 REDIS_ADDR=cache:6379
-REDIS_PASSWORD=J7Bcxp6kjQjVbGG7
+REDIS_PASSWORD=J7asda1jQjVbGG7
 DB_ADDR=db:5432
 DB_NAME=okapi_data_service
 DB_USER=admin
 DB_PASSWORD=sql
 ELASTIC_URL=http://search:9200
+GEN_VOL=./
+HTML_VOL=./
+WT_VOL=./
+JSON_VOL=./
 ```
 3. Running migrations:
 
@@ -46,7 +50,7 @@ go run queues/main.go
 go run streams/main.go
 ```
 
-5. Updating gRPC server. If you need to make changes to `.proto` files don't forget to push you changes into `/protos` git submodule and re-generate static files by running (make sure [protoc compiler](https://grpc.io/docs/protoc-installation/) is installed on you machine):
+5. Updating gRPC server. If you need to make changes to `.proto` don't forget re-generate static files by running (make sure [protoc compiler](https://grpc.io/docs/protoc-installation/) is installed on you machine):
 ```bash
 make protos
 ```
@@ -61,15 +65,19 @@ make protos
 # App settings
 AWS_REGION=us-east-2
 AWS_BUCKET=test-s3-bucket
-AWS_KEY=asdasijoj12312ojasdap1p/asd
-AWS_ID=FFDWQIRJ123
+AWS_KEY=asdasqwea123/asd
+AWS_ID=FFDDDRJ123
 REDIS_ADDR=cache:6379
-REDIS_PASSWORD=J7Bcxp6kjQjVbGG7
+REDIS_PASSWORD=J7Bcxp6kjasdajVbGG7
 DB_ADDR=db:5432
 DB_NAME=okapi_data_service
 DB_USER=admin
 DB_PASSWORD=sql
 ELASTIC_URL=http://search:9200
+GEN_VOL=/var/www/app/.vol
+HTML_VOL=/var/www/app/.vol
+WT_VOL=/var/www/app/.vol
+JSON_VOL=/var/www/app/.vol
 
 # Docker settings
 POSTGRES_USER=admin
