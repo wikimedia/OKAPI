@@ -91,10 +91,10 @@ func Index(ctx context.Context, req *pb.IndexRequest, elastic *elasticsearch.Cli
 				pointer = page.ID
 			}
 		}
+	}
 
-		if err := bi.Close(context.Background()); err != nil {
-			return nil, err
-		}
+	if err := bi.Close(ctx); err != nil {
+		return nil, err
 	}
 
 	return res, nil

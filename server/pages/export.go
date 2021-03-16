@@ -51,7 +51,7 @@ type exportFile struct {
 }
 
 // Export generate new export file and upload it to the storage
-func Export(ctx context.Context, req *pb.ExportReqest, repo exportRepo, store *ExportStorage) (*pb.ExportResponse, error) {
+func Export(ctx context.Context, req *pb.ExportRequest, repo exportRepo, store *ExportStorage) (*pb.ExportResponse, error) {
 	proj := new(models.Project)
 	err := repo.Find(ctx, proj, func(q *orm.Query) *orm.Query {
 		return q.

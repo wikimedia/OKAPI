@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"okapi-data-service/queues/pagevisibility"
@@ -22,6 +23,9 @@ const revisionvisibilityTestName = "stream/revisionvisibility"
 const revisionvisibilityTestTitle = "ninja"
 const revisionvisibilityTestDbName = "ninjas"
 const revisionvisibilityTestRev = 1
+const revisionvisibilitySiteURL = "en.wikipedia.org"
+const revisionvisibilityLang = "en"
+const revisionvisibilityVisible = true
 
 type revisionvisibilityRedisMock struct {
 	mock.Mock
@@ -53,11 +57,16 @@ func TestRevisionvisibility(t *testing.T) {
 	evt.Data.Database = revisionvisibilityTestDbName
 	evt.Data.RevID = revisionvisibilityTestRev
 	evt.Data.Meta.Dt = date
+	evt.Data.Meta.Domain = revisionvisibilitySiteURL
+	evt.Data.Visibility.Text = revisionvisibilityVisible
 
 	data, err := json.Marshal(&pagevisibility.Data{
 		Title:    revisionvisibilityTestTitle,
 		Revision: revisionvisibilityTestRev,
 		DbName:   revisionvisibilityTestDbName,
+		Lang:     revisionvisibilityLang,
+		Visible:  revisionvisibilityVisible,
+		SiteURL:  fmt.Sprintf("https://%s", revisionvisibilitySiteURL),
 	})
 	assert.NoError(err)
 

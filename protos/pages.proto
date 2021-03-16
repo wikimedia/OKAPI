@@ -9,7 +9,7 @@ service Pages {
   rpc Index(IndexRequest) returns (IndexResponse);
   rpc Fetch(FetchRequest) returns (FetchResponse);
   rpc Pull(PullRequest) returns (PullResponse);
-  rpc Export(ExportReqest) returns (ExportResponse);
+  rpc Export(ExportRequest) returns (ExportResponse);
 }
 
 // Index io description
@@ -53,7 +53,7 @@ enum ContentType {
   WIKITEXT = 2;
 }
 
-message ExportReqest {
+message ExportRequest {
   string db_name = 1;
   ContentType content_type = 2;
   int32 workers = 3;

@@ -13,7 +13,6 @@ const envTestAWSKey = "test4api12key123"
 const envTestAWSID = "ABAC123AD13FF"
 
 const envTestRedisAddr = "cache:3030"
-const envTestRedisPassword = "12345"
 
 const envTestDBAddr = "db:3030"
 const envTestDBUser = "admin"
@@ -21,11 +20,15 @@ const envTestDBPassword = "sql"
 const envTestDBName = "main"
 
 const envTestElasticURL = "localhost:9200"
+const envTestElasticUsername = "admin"
+const envTestElasticPassword = "sql"
 
 const envTestGenVol = "./../.gen"
 const envTestHTMLVol = "./../.html"
 const envTestJSONVol = "./../.json"
 const envTestWTVol = "./../.wt"
+
+const envTestKafkaBroker = "broker"
 
 func TestEnv(t *testing.T) {
 	os.Setenv(awsRegion, envTestAWSRegion)
@@ -34,7 +37,6 @@ func TestEnv(t *testing.T) {
 	os.Setenv(awsID, envTestAWSID)
 
 	os.Setenv(redisAddr, envTestRedisAddr)
-	os.Setenv(redisPassword, envTestRedisPassword)
 
 	os.Setenv(dbAddr, envTestDBAddr)
 	os.Setenv(dbUser, envTestDBUser)
@@ -42,32 +44,40 @@ func TestEnv(t *testing.T) {
 	os.Setenv(dbName, envTestDBName)
 
 	os.Setenv(elasticURL, envTestElasticURL)
+	os.Setenv(elasticUsername, envTestElasticUsername)
+	os.Setenv(elasticPassword, envTestElasticPassword)
 
 	os.Setenv(genVol, envTestGenVol)
 	os.Setenv(htmlVol, envTestHTMLVol)
 	os.Setenv(jsonVol, envTestJSONVol)
 	os.Setenv(wtVol, envTestWTVol)
 
+	os.Setenv(kafkaBroker, envTestKafkaBroker)
+
 	err := Init()
-	assert.NoError(t, err)
+	assert := assert.New(t)
+	assert.NoError(err)
 
-	assert.Equal(t, envTestAWSRegion, AWSRegion)
-	assert.Equal(t, envTestAWSBucket, AWSBucket)
-	assert.Equal(t, envTestAWSKey, AWSKey)
-	assert.Equal(t, envTestAWSID, AWSID)
+	assert.Equal(envTestAWSRegion, AWSRegion)
+	assert.Equal(envTestAWSBucket, AWSBucket)
+	assert.Equal(envTestAWSKey, AWSKey)
+	assert.Equal(envTestAWSID, AWSID)
 
-	assert.Equal(t, envTestRedisAddr, RedisAddr)
-	assert.Equal(t, envTestRedisPassword, RedisPassword)
+	assert.Equal(envTestRedisAddr, RedisAddr)
 
-	assert.Equal(t, envTestDBAddr, DBAddr)
-	assert.Equal(t, envTestDBUser, DBUser)
-	assert.Equal(t, envTestDBPassword, DBPassword)
-	assert.Equal(t, envTestDBName, DBName)
+	assert.Equal(envTestDBAddr, DBAddr)
+	assert.Equal(envTestDBUser, DBUser)
+	assert.Equal(envTestDBPassword, DBPassword)
+	assert.Equal(envTestDBName, DBName)
 
-	assert.Equal(t, envTestElasticURL, ElasticURL)
+	assert.Equal(envTestElasticURL, ElasticURL)
+	assert.Equal(envTestElasticUsername, ElasticUsername)
+	assert.Equal(envTestElasticPassword, ElasticPassword)
 
-	assert.Equal(t, envTestGenVol, GenVol)
-	assert.Equal(t, envTestHTMLVol, HTMLVol)
-	assert.Equal(t, envTestJSONVol, JSONVol)
-	assert.Equal(t, envTestWTVol, WTVol)
+	assert.Equal(envTestGenVol, GenVol)
+	assert.Equal(envTestHTMLVol, HTMLVol)
+	assert.Equal(envTestJSONVol, JSONVol)
+	assert.Equal(envTestWTVol, WTVol)
+
+	assert.Equal(envTestKafkaBroker, KafkaBroker)
 }

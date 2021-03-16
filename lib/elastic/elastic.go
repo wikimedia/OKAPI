@@ -26,6 +26,8 @@ func Init() error {
 	}
 
 	client, err = elasticsearch.NewClient(elasticsearch.Config{
+		Username: env.ElasticUsername,
+		Password: env.ElasticPassword,
 		Addresses: []string{
 			env.ElasticURL,
 		},

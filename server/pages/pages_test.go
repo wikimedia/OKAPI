@@ -67,6 +67,6 @@ func TestPages(t *testing.T) {
 	_, err = client.Pull(ctx, new(pb.PullRequest))
 	assert.NoError(err)
 
-	_, err = client.Export(ctx, new(pb.ExportReqest))
+	_, err = client.Export(ctx, new(pb.ExportRequest))
 	assert.Error(err)
 }

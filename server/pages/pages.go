@@ -9,7 +9,6 @@ import (
 	"okapi-data-service/lib/pg"
 	"okapi-data-service/server/pages/content"
 	pb "okapi-data-service/server/pages/protos"
-	"okapi-data-service/server/utils"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/protsack-stephan/dev-toolkit/pkg/repository"
@@ -22,13 +21,14 @@ import (
 	"github.com/protsack-stephan/dev-toolkit/lib/db"
 	"github.com/protsack-stephan/dev-toolkit/lib/fs"
 	"github.com/protsack-stephan/dev-toolkit/lib/s3"
+	"github.com/protsack-stephan/dev-toolkit/pkg/server"
 	"github.com/protsack-stephan/dev-toolkit/pkg/storage"
 )
 
 // Server for pages manipulation
 type Server struct {
 	pb.UnimplementedPagesServer
-	utils.Sequential
+	server.Sequential
 	remoteStore storage.Storage
 	htmlStore   storage.Storage
 	jsonStore   storage.Storage
@@ -70,9 +70,10 @@ func (srv *Server) Pull(ctx context.Context, req *pb.PullRequest) (*pb.PullRespo
 
 	err := srv.Once(fmt.Sprintf("%s/%s", "pull", req.DbName), func() (err error) {
 		res, err = Pull(ctx, req, srv.repo, &content.Storage{
-			JSON:  srv.jsonStore,
-			HTML:  srv.htmlStore,
-			WText: srv.wtStore,
+			JSON:   srv.jsonStore,
+			HTML:   srv.htmlStore,
+			WText:  srv.wtStore,
+			Remote: srv.remoteStore,
 		})
 		return
 	})
@@ -81,7 +82,7 @@ func (srv *Server) Pull(ctx context.Context, req *pb.PullRequest) (*pb.PullRespo
 }
 
 // Export bundle and upload pages to storage server
-func (srv *Server) Export(ctx context.Context, req *pb.ExportReqest) (*pb.ExportResponse, error) {
+func (srv *Server) Export(ctx context.Context, req *pb.ExportRequest) (*pb.ExportResponse, error) {
 	var res *pb.ExportResponse
 
 	err := srv.Once(fmt.Sprintf("%s/%s", "export", req.DbName), func() (err error) {

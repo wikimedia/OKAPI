@@ -20,7 +20,7 @@ type PagesClient interface {
 	Index(ctx context.Context, in *IndexRequest, opts ...grpc.CallOption) (*IndexResponse, error)
 	Fetch(ctx context.Context, in *FetchRequest, opts ...grpc.CallOption) (*FetchResponse, error)
 	Pull(ctx context.Context, in *PullRequest, opts ...grpc.CallOption) (*PullResponse, error)
-	Export(ctx context.Context, in *ExportReqest, opts ...grpc.CallOption) (*ExportResponse, error)
+	Export(ctx context.Context, in *ExportRequest, opts ...grpc.CallOption) (*ExportResponse, error)
 }
 
 type pagesClient struct {
@@ -58,7 +58,7 @@ func (c *pagesClient) Pull(ctx context.Context, in *PullRequest, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *pagesClient) Export(ctx context.Context, in *ExportReqest, opts ...grpc.CallOption) (*ExportResponse, error) {
+func (c *pagesClient) Export(ctx context.Context, in *ExportRequest, opts ...grpc.CallOption) (*ExportResponse, error) {
 	out := new(ExportResponse)
 	err := c.cc.Invoke(ctx, "/pages.Pages/Export", in, out, opts...)
 	if err != nil {
@@ -74,7 +74,7 @@ type PagesServer interface {
 	Index(context.Context, *IndexRequest) (*IndexResponse, error)
 	Fetch(context.Context, *FetchRequest) (*FetchResponse, error)
 	Pull(context.Context, *PullRequest) (*PullResponse, error)
-	Export(context.Context, *ExportReqest) (*ExportResponse, error)
+	Export(context.Context, *ExportRequest) (*ExportResponse, error)
 	mustEmbedUnimplementedPagesServer()
 }
 
@@ -91,7 +91,7 @@ func (UnimplementedPagesServer) Fetch(context.Context, *FetchRequest) (*FetchRes
 func (UnimplementedPagesServer) Pull(context.Context, *PullRequest) (*PullResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Pull not implemented")
 }
-func (UnimplementedPagesServer) Export(context.Context, *ExportReqest) (*ExportResponse, error) {
+func (UnimplementedPagesServer) Export(context.Context, *ExportRequest) (*ExportResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Export not implemented")
 }
 func (UnimplementedPagesServer) mustEmbedUnimplementedPagesServer() {}
@@ -162,7 +162,7 @@ func _Pages_Pull_Handler(srv interface{}, ctx context.Context, dec func(interfac
 }
 
 func _Pages_Export_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ExportReqest)
+	in := new(ExportRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -174,7 +174,7 @@ func _Pages_Export_Handler(srv interface{}, ctx context.Context, dec func(interf
 		FullMethod: "/pages.Pages/Export",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PagesServer).Export(ctx, req.(*ExportReqest))
+		return srv.(PagesServer).Export(ctx, req.(*ExportRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

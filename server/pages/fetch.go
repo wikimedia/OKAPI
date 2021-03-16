@@ -23,7 +23,7 @@ type fetchRepo interface {
 	repository.Updater
 }
 
-// Fetch get page titles from the dumps and add the to the sotage and database
+// Fetch get page titles from the dumps and add the to the storage and database
 func Fetch(ctx context.Context, req *pb.FetchRequest, repo fetchRepo, dumps *dumps.Client) (*pb.FetchResponse, error) {
 	res := new(pb.FetchResponse)
 	proj := new(models.Project)
@@ -44,7 +44,11 @@ func Fetch(ctx context.Context, req *pb.FetchRequest, repo fetchRepo, dumps *dum
 		req.Batch = 50
 	}
 
-	titles, err := dumps.PageTitles(ctx, req.DbName, time.Now())
+	titles, err := dumps.PageTitles(ctx, req.DbName, time.Now().UTC())
+
+	if err != nil {
+		titles, err = dumps.PageTitles(ctx, req.DbName, time.Now().UTC().Add(-24*time.Hour))
+	}
 
 	if err != nil {
 		return nil, err

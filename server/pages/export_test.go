@@ -138,7 +138,7 @@ func (rwc *exportRWC) Close() error {
 
 func TestExport(t *testing.T) {
 	ctx := context.Background()
-	req := &pb.ExportReqest{
+	req := &pb.ExportRequest{
 		DbName:      exportTestProject.DbName,
 		Workers:     4,
 		ContentType: pb.ContentType_HTML,

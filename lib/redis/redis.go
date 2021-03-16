@@ -24,8 +24,7 @@ func Init() error {
 	}
 
 	client = redis.NewClient(&redis.Options{
-		Addr:     env.RedisAddr,
-		Password: env.RedisPassword,
+		Addr: env.RedisAddr,
 	})
 
 	return nil

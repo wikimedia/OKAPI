@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"okapi-data-service/models"
+	"okapi-data-service/pkg/topics"
 	"okapi-data-service/pkg/worker"
+	"okapi-data-service/schema/v1"
 	"okapi-data-service/server/pages/content"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-pg/pg/v10/orm"
 
 	"github.com/go-redis/redis/v8"
@@ -56,7 +59,7 @@ type Repo interface {
 }
 
 // Worker processing function
-func Worker(repo Repo, storages *content.Storage) worker.Worker {
+func Worker(repo Repo, storage content.Puller, producer topics.Producer) worker.Worker {
 	return func(ctx context.Context, payload []byte) error {
 		data := new(Data)
 
@@ -104,14 +107,36 @@ func Worker(repo Repo, storages *content.Storage) worker.Worker {
 		}
 
 		page.SetRevision(meta.LastRevID, meta.Revisions[0].Timestamp)
+		msg, err := storage.Pull(ctx, page, mwiki)
 
-		if err := content.Pull(ctx, page, storages, mwiki); err != nil {
+		if err != nil {
 			return err
 		}
 
-		_, err = repo.Update(ctx, page, query)
+		if _, err := repo.Update(ctx, page, query); err != nil {
+			return err
+		}
 
-		return err
+		value, err := json.Marshal(msg)
+
+		if err != nil {
+			return err
+		}
+
+		key, err := json.Marshal(schema.PageKey{
+			Title:  data.Title,
+			DbName: data.DbName,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		return producer.Produce(&kafka.Message{
+			TopicPartition: kafka.TopicPartition{Topic: &topics.PageUpdate, Partition: 0},
+			Key:            key,
+			Value:          value,
+		}, nil)
 	}
 }
 

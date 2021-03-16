@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/wikimedia/OKAPI/tree/master/schema/v1/page-key.schema.json",
+  "title": "Page Key",
+  "description": "Key for all page related topics",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the page"
+    },
+    "dbName": {
+      "type": "string",
+      "description": "Name of the project database"
+    }
+  },
+  "required": [
+    "title",
+    "dbName"
+  ]
+}

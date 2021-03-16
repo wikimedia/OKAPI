@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"okapi-data-service/models"
+	"okapi-data-service/pkg/topics"
 	"okapi-data-service/pkg/worker"
+	"okapi-data-service/schema/v1"
+	"okapi-data-service/server/pages/content"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-pg/pg/v10/orm"
 	"github.com/go-redis/redis/v8"
 	"github.com/protsack-stephan/dev-toolkit/pkg/repository"
-	"github.com/protsack-stephan/dev-toolkit/pkg/storage"
 )
 
 // Name redis key for the queue
@@ -27,15 +30,8 @@ type Repo interface {
 	repository.Finder
 }
 
-// Storages all necessary sotrages
-type Storages struct {
-	HTML  storage.Deleter
-	WText storage.Deleter
-	JSON  storage.Deleter
-}
-
 // Worker processing function
-func Worker(repo Repo, stores *Storages) worker.Worker {
+func Worker(repo Repo, stores content.Deleter, producer topics.Producer) worker.Worker {
 	return func(ctx context.Context, payload []byte) error {
 		data := new(Data)
 
@@ -56,21 +52,31 @@ func Worker(repo Repo, stores *Storages) worker.Worker {
 			return err
 		}
 
-		var result error
-
-		if err := stores.HTML.Delete(page.HTMLPath); err != nil {
-			result = err
+		if err := stores.Delete(ctx, page); err != nil {
+			return err
 		}
 
-		if err := stores.WText.Delete(page.WikitextPath); err != nil {
-			result = err
+		msg := content.NewStructured(page)
+		value, err := json.Marshal(msg)
+
+		if err != nil {
+			return err
 		}
 
-		if err := stores.JSON.Delete(page.JSONPath); err != nil {
-			result = err
+		key, err := json.Marshal(schema.PageKey{
+			Title:  data.Title,
+			DbName: data.DbName,
+		})
+
+		if err != nil {
+			return err
 		}
 
-		return result
+		return producer.Produce(&kafka.Message{
+			TopicPartition: kafka.TopicPartition{Topic: &topics.PageDelete, Partition: 0},
+			Key:            key,
+			Value:          value,
+		}, nil)
 	}
 }
 

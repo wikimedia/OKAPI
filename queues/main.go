@@ -5,12 +5,16 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"okapi-data-service/lib/aws"
 	"okapi-data-service/lib/env"
 	"okapi-data-service/lib/pg"
 	store "okapi-data-service/lib/redis"
 	"okapi-data-service/server/pages/content"
 	"sync"
 	"time"
+
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/protsack-stephan/dev-toolkit/lib/s3"
 
 	"okapi-data-service/pkg/worker"
 	"okapi-data-service/queues/pagedelete"
@@ -45,6 +49,7 @@ func main() {
 		env.Init,
 		store.Init,
 		pg.Init,
+		aws.Init,
 	}
 
 	for _, init := range setup {
@@ -53,33 +58,41 @@ func main() {
 		}
 	}
 
+	producer, err := kafka.NewProducer(&kafka.ConfigMap{
+		"bootstrap.servers": env.KafkaBroker,
+		"message.max.bytes": "20971520",
+	})
+
+	if err != nil {
+		log.Panic(err)
+	}
+
 	html, json, wikitext := fs.NewStorage(env.HTMLVol), fs.NewStorage(env.JSONVol), fs.NewStorage(env.WTVol)
+	remote := s3.NewStorage(aws.Session(), env.AWSBucket)
 	store := store.Client()
 	repo := db.NewRepository(pg.Conn())
+	storage := &content.Storage{
+		HTML:   html,
+		WText:  wikitext,
+		JSON:   json,
+		Remote: remote,
+	}
 
 	queues := []queue{
 		{
 			workers: 5,
 			name:    pagedelete.Name,
-			worker: pagedelete.Worker(repo, &pagedelete.Storages{
-				HTML:  html,
-				WText: wikitext,
-				JSON:  json,
-			}),
+			worker:  pagedelete.Worker(repo, storage, producer),
 		},
 		{
 			workers: 25,
 			name:    pagepull.Name,
-			worker: pagepull.Worker(repo, &content.Storage{
-				HTML:  html,
-				WText: wikitext,
-				JSON:  json,
-			}),
+			worker:  pagepull.Worker(repo, storage, producer),
 		},
 		{
 			workers: 1,
 			name:    pagevisibility.Name,
-			worker:  pagevisibility.Worker(),
+			worker:  pagevisibility.Worker(repo, storage, producer),
 		},
 	}
 

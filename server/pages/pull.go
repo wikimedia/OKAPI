@@ -25,8 +25,8 @@ type pullRepo interface {
 	repository.Updater
 }
 
-// Pull get all of the pages from db and store html/wikitext from API calls on the hard drive
-func Pull(ctx context.Context, req *pb.PullRequest, repo pullRepo, storage *content.Storage) (*pb.PullResponse, error) {
+// Pull get all of the pages from db and store html/wikitext from API calls on the hard drive and S3
+func Pull(ctx context.Context, req *pb.PullRequest, repo pullRepo, store content.Puller) (*pb.PullResponse, error) {
 	proj := new(models.Project)
 	err := repo.Find(ctx, proj, func(q *orm.Query) *orm.Query {
 		return q.
@@ -68,7 +68,7 @@ func Pull(ctx context.Context, req *pb.PullRequest, repo pullRepo, storage *cont
 		go func() {
 			defer jobWg.Done()
 			for page := range jobs {
-				err := content.Pull(ctx, &page, storage, mwiki)
+				_, err := store.Pull(ctx, &page, mwiki)
 
 				if err != nil {
 					errs <- err

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package diffs;
+
+option go_package = "okapi-diffs/protos";
+
+// Diffs service method definitions
+service Diffs {
+  rpc Export(ExportRequest) returns (ExportResponse);
+  rpc Tidy(TidyRequest) returns (TidyResponse);
+}
+
+// Export io
+message ExportRequest {
+  string db_name = 1;
+  int32 workers = 3;
+}
+
+message ExportResponse {
+  int32 total = 1;
+  int32 errors = 2;
+}
+
+// Tidy io
+message TidyRequest {}
+
+message TidyResponse {}

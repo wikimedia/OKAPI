@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/aws/aws-sdk-go v1.37.0
+	github.com/confluentinc/confluent-kafka-go v1.5.2
 	github.com/elastic/go-elasticsearch/v7 v7.10.0
 	github.com/go-pg/pg/v10 v10.7.4
 	github.com/go-redis/redis/v8 v8.4.9
@@ -12,7 +13,7 @@ require (
 	github.com/klauspost/compress v1.11.7 // indirect
 	github.com/klauspost/pgzip v1.2.5
 	github.com/mattn/go-isatty v0.0.12 // indirect
-	github.com/protsack-stephan/dev-toolkit v1.1.1
+	github.com/protsack-stephan/dev-toolkit v1.1.4
 	github.com/protsack-stephan/go-pg-migrations-helper v1.0.1
 	github.com/protsack-stephan/mediawiki-api-client v1.1.2
 	github.com/protsack-stephan/mediawiki-dumps-client v1.0.1

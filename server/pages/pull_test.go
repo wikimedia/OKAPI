@@ -2,18 +2,17 @@ package pages
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"okapi-data-service/models"
-	"okapi-data-service/server/pages/content"
+	"okapi-data-service/schema/v1"
 	pb "okapi-data-service/server/pages/protos"
 	"testing"
 
 	"github.com/go-pg/pg/v10/orm"
+	"github.com/protsack-stephan/mediawiki-api-client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -67,11 +66,11 @@ type pullRepoMock struct {
 	count int
 }
 
-func (r *pullRepoMock) Update(_ context.Context, model interface{}, modifier func(*orm.Query) *orm.Query, fields ...interface{}) (orm.Result, error) {
+func (r *pullRepoMock) Update(_ context.Context, model interface{}, _ func(*orm.Query) *orm.Query, fields ...interface{}) (orm.Result, error) {
 	return nil, r.Called(model, fields).Error(0)
 }
 
-func (r *pullRepoMock) Find(_ context.Context, model interface{}, modifier func(*orm.Query) *orm.Query, values ...interface{}) error {
+func (r *pullRepoMock) Find(_ context.Context, model interface{}, _ func(*orm.Query) *orm.Query, _ ...interface{}) error {
 	args := r.Called(model)
 
 	switch model := model.(type) {
@@ -92,14 +91,8 @@ type pullStorageMock struct {
 	mock.Mock
 }
 
-func (r *pullStorageMock) Put(path string, body io.Reader) error {
-	data, err := ioutil.ReadAll(body)
-
-	if err != nil {
-		return err
-	}
-
-	return r.Called(path, string(data)).Error(0)
+func (r *pullStorageMock) Pull(_ context.Context, page *models.Page, _ *mediawiki.Client) (*schema.Page, error) {
+	return nil, r.Called(*page).Error(0)
 }
 
 func createPullTestServer() http.Handler {
@@ -149,43 +142,18 @@ func TestPull(t *testing.T) {
 	repo.On("Find", &[]models.Page{}).Return(nil)
 	repo.On("Find", &models.Project{}).Return(nil)
 
-	jsonStore := new(pullStorageMock)
-	htmlStore := new(pullStorageMock)
-	wtStore := new(pullStorageMock)
+	store := new(pullStorageMock)
 
 	for _, info := range pullTestPages {
 		page := info
-		page.JSONPath = fmt.Sprintf("json/%s/%s.json", page.DbName, page.Title)
-		page.HTMLPath = fmt.Sprintf("html/%s/%s.html", page.DbName, page.Title)
-		page.WikitextPath = fmt.Sprintf("wikitext/%s/%s.wt", page.DbName, page.Title)
 		repo.On("Update", &page, pullTestPageFields).Return(nil)
-
-		testdata := &content.Structured{
-			Title:    page.Title,
-			DbName:   page.DbName,
-			QID:      page.QID,
-			PID:      page.PID,
-			Revision: page.Revision,
-			URL:      fmt.Sprintf("%s/wiki/%s", page.SiteURL, page.Title),
-			License:  []string{content.License},
-			HTML:     fmt.Sprintf(pullTestHTMLRes, page.Title),
-			Wikitext: fmt.Sprintf(pullTestWtRes, page.Title),
-		}
-
-		data, err := json.Marshal(testdata)
-		assert.NoError(err)
-
-		jsonStore.On("Put", page.JSONPath, string(data)).Return(nil)
-		htmlStore.On("Put", page.HTMLPath, testdata.HTML).Return(nil)
-		wtStore.On("Put", page.WikitextPath, testdata.Wikitext).Return(nil)
+		store.On("Pull", info).Return(nil)
 	}
 
-	res, err := Pull(ctx, req, repo, &content.Storage{
-		JSON:  jsonStore,
-		HTML:  htmlStore,
-		WText: wtStore,
-	})
+	res, err := Pull(ctx, req, repo, store)
 	assert.NoError(err)
 	assert.NotZero(res.Total)
 	assert.Zero(res.Errors)
+	store.AssertNumberOfCalls(t, "Pull", len(pullTestPages))
+	repo.AssertNumberOfCalls(t, "Update", len(pullTestPages))
 }

@@ -21,7 +21,7 @@ func Handler(ctx context.Context, store redis.Cmdable, expire time.Duration) fun
 	return func(evt *eventstream.RevisionScore) {
 		var err error
 
-		if !evt.Data.PageIsRedirect && ores.ModelDamaging.Supports(evt.Data.Database) && !utils.Exclude(evt.Data.Database) {
+		if !evt.Data.PageIsRedirect && ores.ModelDamaging.Supports(evt.Data.Database) && !utils.Exclude(evt.Data.Database) && utils.FilterNs(evt.Data.PageNamespace) {
 			err = pagepull.Enqueue(ctx, store, &pagepull.Data{
 				Title:   evt.Data.PageTitle,
 				DbName:  evt.Data.Database,

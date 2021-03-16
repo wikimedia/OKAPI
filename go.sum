@@ -9,6 +9,8 @@ github.com/cespare/xxhash/v2 v2.1.1 h1:6MnRN8NT7+YBpUIWxHtefFZOKTAPgGjpQSxqLNn0+
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
+github.com/confluentinc/confluent-kafka-go v1.5.2 h1:l+qt+a0Okmq0Bdr1P55IX4fiwFJyg0lZQmfHkAFkv7E=
+github.com/confluentinc/confluent-kafka-go v1.5.2/go.mod h1:u2zNLny2xq+5rWeTQjFHbDzzNuba4P1vo31r9r4uAdg=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d h1:U+s90UTSYgptZMwQh2aRr3LuazLJIa+Pg3Kc1ylSYVY=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -120,6 +122,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/protsack-stephan/dev-toolkit v1.1.1 h1:pYMi5vTqNJt6HQCNKZQPVIDlhKKuiqhtN2cQK3Jtki8=
 github.com/protsack-stephan/dev-toolkit v1.1.1/go.mod h1:ijr5DWn2P5qDjSPJjZA92MSduSXoIEce2LTh2Ale3Xc=
+github.com/protsack-stephan/dev-toolkit v1.1.4 h1:JucdYErDSI3pphf+QLXLS6jPG77GIeVmQwAcCJ8Ccbg=
+github.com/protsack-stephan/dev-toolkit v1.1.4/go.mod h1:M8m8bUmu/zW2FJ3oqyt5i1VpPuKGQJTk93H2cP1GW3o=
 github.com/protsack-stephan/go-pg-migrations-helper v1.0.1 h1:NRbrSiO8amEMeubwA0dGCzQaulRvkL2UpD6BUgSdeSQ=
 github.com/protsack-stephan/go-pg-migrations-helper v1.0.1/go.mod h1:XPayd9gcmP1vWpII4IIf+9Z6vJTyTXLT99EmAT4Tmb0=
 github.com/protsack-stephan/mediawiki-api-client v1.1.2 h1:Z6X9GJM7Rnie8rk0kAYKfZHFhb8EeKyVdqOQQhTKeZQ=

@@ -20,7 +20,7 @@ func Handler(ctx context.Context, store redis.Cmdable, expire time.Duration) fun
 	return func(evt *eventstream.PageDelete) {
 		var err error
 
-		if !utils.Exclude(evt.Data.Database) {
+		if !utils.Exclude(evt.Data.Database) && utils.FilterNs(evt.Data.PageNamespace) {
 			err = pagedelete.Enqueue(ctx, store, &pagedelete.Data{
 				Title:  evt.Data.PageTitle,
 				DbName: evt.Data.Database,
