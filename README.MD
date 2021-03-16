@@ -23,18 +23,18 @@ GEN_VOL=tmp/gen
 JSON_VOL=tmp/json
 WT_VOL=tmp/wt
 ```
-3. Running migrations:
+2. Running migrations:
 
 ```bash
 go run migrations/*.go migrate
 ```
 
-4. Testing, in order to run test suite yo need to do:
+3. Testing, in order to run test suite yo need to do:
 ```bash
 go test ./... -v
 ```
 
-5. Running the application:
+4. Running the application:
 ```bash
 # Main app (gRPC server)
 go run server/main.go
