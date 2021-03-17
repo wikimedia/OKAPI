@@ -1,0 +1,54 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+@import './components/index.scss';
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+
+  font-family: Helvetica Neue;
+}
+
+.layout {
+  color: $black;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  padding-top: 113px;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.main {
+  height: 100%;
+  flex: 1;
+  margin-top: 42px;
+  margin-bottom: 42px;
+
+  &--gap {
+    margin-top: 42px;
+    margin-bottom: 42px;
+  }
+}
+
+.wrapper {
+  margin: 0 auto;
+  max-width: 610px;
+  
+  @include s {
+    padding: 0 24px;
+  }
+}
+
+.form__item .MuiInputLabel-formControl,
+.form__item .MuiInputLabel-formControl.Mui-focused {
+  color: black;
+  font-weight: 700;
+}
+.MuiInputBase-input {
+  animation: none;
+}

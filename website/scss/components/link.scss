@@ -1,0 +1,15 @@
+.link {
+  font-family: Helvetica Neue;
+  font-size: 14px;
+  line-height: 22px;
+  color: #FFFFFF;
+  text-decoration: none;
+
+  &--active {
+    opacity: .4;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
