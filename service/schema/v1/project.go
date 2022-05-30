@@ -6,5 +6,5 @@ type Project struct {
 	DbName     string `json:"dbName"`
 	InLanguage string `json:"inLanguage"`
 	Size       string `json:"size"`
-	URL        string `json:"URL"`
+	URL        string `json:"url"`
 }

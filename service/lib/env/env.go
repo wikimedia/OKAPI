@@ -1,13 +1,18 @@
 package env
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
+
+// AWSURL url for the aws sessions (set this to "default" if you don't want to provide the custom one)
+var AWSURL string
 
 // AWSRegion availability region for amazon
 var AWSRegion string
@@ -51,15 +56,28 @@ var GenVol string
 // JSONVol json data volume
 var JSONVol string
 
-// HTMLVol html data volume
-var HTMLVol string
-
-// WTVol wikitext data volume
-var WTVol string
-
 // KafkaBroker kafka server
 var KafkaBroker string
 
+// KafkaCreds kafka credentials
+var KafkaCreds struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+// MediawikiAPIUserAgent default API user agent
+var MediawikiAPIUserAgent string = "WME/1.0 (https://enterprise.wikimedia.com/; wme_mgmt@wikimedia.org)"
+
+// PagedeleteWorkers number of workers for pagedelete handler
+var PagedeleteWorkers = 3
+
+// PagefetchWorkers number of workers for pagefetch handler
+var PagefetchWorkers = 30
+
+// PagevisibilityWorkers number of workers for pagevisibility handler
+var PagevisibilityWorkers = 2
+
+const awsURL = "AWS_URL"
 const awsRegion = "AWS_REGION"
 const awsBucket = "AWS_BUCKET"
 const awsKey = "AWS_KEY"
@@ -77,14 +95,18 @@ const elasticUsername = "ELASTIC_USERNAME"
 const elasticPassword = "ELASTIC_PASSWORD"
 
 const genVol = "GEN_VOL"
-const htmlVol = "HTML_VOL"
-const wtVol = "WT_VOL"
 const jsonVol = "JSON_VOL"
 const kafkaBroker = "KAFKA_BROKER"
+const kafkaCreds = "KAFKA_CREDS"
+
+const pagedeleteWorkers = "PAGE_DELETE_WORKERS"
+const pagefetchWorkers = "PAGE_FETCH_WORKERS"
+const pagevisibilityWorkers = "PAGE_VISIBILITY_WORKERS"
 
 const errorMessage = "env variable '%s' not found"
 
 var variables = map[*string]string{
+	&AWSURL:          awsURL,
 	&AWSRegion:       awsRegion,
 	&AWSBucket:       awsBucket,
 	&AWSKey:          awsKey,
@@ -98,10 +120,14 @@ var variables = map[*string]string{
 	&ElasticUsername: elasticUsername,
 	&ElasticPassword: elasticPassword,
 	&GenVol:          genVol,
-	&HTMLVol:         htmlVol,
-	&WTVol:           wtVol,
 	&JSONVol:         jsonVol,
 	&KafkaBroker:     kafkaBroker,
+}
+
+var workers = map[*int]string{
+	&PagedeleteWorkers:     pagedeleteWorkers,
+	&PagefetchWorkers:      pagefetchWorkers,
+	&PagevisibilityWorkers: pagevisibilityWorkers,
 }
 
 // Init environment params
@@ -119,6 +145,30 @@ func Init() error {
 		if !exists {
 			return fmt.Errorf(errorMessage, name)
 		}
+	}
+
+	creds, exists := os.LookupEnv(kafkaCreds)
+
+	if exists {
+		if err := json.Unmarshal([]byte(creds), &KafkaCreds); err != nil {
+			return fmt.Errorf("can't unmarshal kafka credentials: %w", err)
+		}
+	}
+
+	for ref, name := range workers {
+		strVal, ok := os.LookupEnv(name)
+
+		if !ok {
+			continue
+		}
+
+		val, err := strconv.Atoi(strVal)
+
+		if err != nil {
+			return fmt.Errorf("not an integer value for '%s': %w", name, err)
+		}
+
+		*ref = val
 	}
 
 	return nil

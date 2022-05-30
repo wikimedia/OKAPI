@@ -19,12 +19,6 @@ func NewBuilder() *Builder {
 	}
 }
 
-// HTMLStorage set new html storage for the server
-func (bu *Builder) HTMLStorage(store storage.Storage) *Builder {
-	bu.srv.htmlStore = store
-	return bu
-}
-
 // JSONStorage set new json storage for the server
 func (bu *Builder) JSONStorage(store storage.Storage) *Builder {
 	bu.srv.jsonStore = store
@@ -34,12 +28,6 @@ func (bu *Builder) JSONStorage(store storage.Storage) *Builder {
 // GenStorage set new general storage for the server
 func (bu *Builder) GenStorage(store storage.Storage) *Builder {
 	bu.srv.genStore = store
-	return bu
-}
-
-// WTStorage set new wikitext storage
-func (bu *Builder) WTStorage(store storage.Storage) *Builder {
-	bu.srv.wtStore = store
 	return bu
 }
 

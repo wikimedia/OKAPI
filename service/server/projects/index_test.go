@@ -28,7 +28,6 @@ const indexTestProjSiteCode = "wiki"
 const indexTestProjSiteURL = "https://en.wikipedia.org/"
 const indexTestProjLang = "en"
 const indexTestProjActive = true
-const indexTestProjSize = 120.0
 const indexTestProjLangName = "English"
 const indexTestProjLangLocalName = "Eng"
 
@@ -41,7 +40,6 @@ var indexTestProjects = []models.Project{
 		SiteURL:  indexTestProjSiteURL,
 		Lang:     indexTestProjLang,
 		Active:   indexTestProjActive,
-		JSONSize: indexTestProjSize,
 		Language: &models.Language{
 			Name:      indexTestProjLangName,
 			LocalName: indexTestProjLangLocalName,
@@ -87,7 +85,6 @@ func testIndexServer(t *testing.T) http.Handler {
 		assert.Equal(t, indexTestProjLangName, doc.LangName)
 		assert.Equal(t, indexTestProjLangLocalName, doc.LangLocalName)
 		assert.Equal(t, indexTestProjActive, doc.Active)
-		assert.Equal(t, indexTestProjSize, doc.Size)
 	})
 
 	return router

@@ -3,33 +3,56 @@ package pages
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"math"
 	"okapi-data-service/models"
+	"okapi-data-service/pkg/page"
+	"okapi-data-service/server/pages/fetch"
 	pb "okapi-data-service/server/pages/protos"
+	"strings"
 	"time"
 
 	"github.com/go-pg/pg/v10/orm"
 	"github.com/protsack-stephan/dev-toolkit/pkg/repository"
+	"github.com/protsack-stephan/dev-toolkit/pkg/storage"
 	"github.com/protsack-stephan/mediawiki-api-client"
 	dumps "github.com/protsack-stephan/mediawiki-dumps-client"
 )
 
 var errBatchSizeToBig = errors.New("batch size should be no more that 50")
+var errMinNumberOfWorkers = errors.New("min number of workers is 1")
 
 type fetchRepo interface {
-	repository.SelectOrCreator
+	repository.Creator
 	repository.Finder
 	repository.Updater
 }
 
+type fetchStorage interface {
+	storage.Putter
+	storage.Deleter
+}
+
 // Fetch get page titles from the dumps and add the to the storage and database
-func Fetch(ctx context.Context, req *pb.FetchRequest, repo fetchRepo, dumps *dumps.Client) (*pb.FetchResponse, error) {
+func Fetch(ctx context.Context, req *pb.FetchRequest, repo fetchRepo, mwdump *dumps.Client, store fetchStorage, fetcher fetch.FetcherFactory) (*pb.FetchResponse, error) {
 	res := new(pb.FetchResponse)
 	proj := new(models.Project)
 	err := repo.Find(ctx, proj, func(q *orm.Query) *orm.Query {
 		return q.
+			ColumnExpr("project.*, language.local_name as language__local_name, language.code as language__code").
+			Join("left join languages as language").
+			JoinOn("project.lang = language.code").
 			Where("db_name = ?", req.DbName)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	ns := new(models.Namespace)
+	err = repo.Find(ctx, ns, func(q *orm.Query) *orm.Query {
+		return q.Where("id = ? and lang = ?", req.Ns, proj.Lang)
 	})
 
 	if err != nil {
@@ -40,30 +63,83 @@ func Fetch(ctx context.Context, req *pb.FetchRequest, repo fetchRepo, dumps *dum
 		return nil, errBatchSizeToBig
 	}
 
+	if req.Workers <= 0 {
+		return nil, errMinNumberOfWorkers
+	}
+
 	if req.Batch <= 0 {
 		req.Batch = 50
 	}
 
-	titles, err := dumps.PageTitles(ctx, req.DbName, time.Now().UTC())
+	titles := []string{}
 
-	if err != nil {
-		titles, err = dumps.PageTitles(ctx, req.DbName, time.Now().UTC().Add(-24*time.Hour))
-	}
+	if req.Failed {
+		pages := []*models.Page{}
 
-	if err != nil {
-		return nil, err
+		err := repo.Find(ctx, &pages, func(q *orm.Query) *orm.Query {
+			return q.
+				Column("title").
+				Where("db_name = ? and ns_id = ? and failed = true", req.DbName, req.Ns)
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, page := range pages {
+			titles = append(titles, page.Title)
+		}
+	} else {
+		filter := func(p *dumps.Page) {
+			if p.Ns == int(req.Ns) {
+				titles = append(titles, p.Title)
+			}
+		}
+
+		if req.Ns == 0 {
+			if err := mwdump.PageTitles(ctx, req.DbName, time.Now().UTC(), filter); err != nil {
+				if err := mwdump.PageTitles(ctx, req.DbName, time.Now().UTC().Add(-24*time.Hour), filter); err != nil {
+					return nil, err
+				}
+			}
+		} else {
+			date := time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.UTC)
+
+			if time.Now().UTC().Day() > 20 {
+				date = time.Date(time.Now().Year(), time.Now().Month(), 20, 0, 0, 0, 0, time.UTC)
+			}
+
+			if err := mwdump.PageTitlesNs(ctx, req.DbName, date, filter); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	length := len(titles)
 	batches := int(math.Ceil(float64(length) / float64(req.Batch)))
 	mwiki := mediawiki.NewClient(proj.SiteURL)
 	jobs := make(chan []string, batches)
-	errs := make(chan []error, batches)
+	errs := make(chan map[string]error, batches)
+	worker := fetcher.Create(
+		&page.Factory{
+			Project:   proj,
+			Language:  proj.Language,
+			Namespace: ns,
+		},
+		store,
+		mwiki,
+		repo)
 
 	for i := 0; i < int(req.Workers); i++ {
 		go func() {
 			for titles := range jobs {
-				errs <- fetchWorker(ctx, titles, proj, repo, mwiki)
+				_, fErrs, err := worker.Fetch(ctx, titles...)
+
+				if err != nil {
+					log.Println(strings.Replace(err.Error(), "\n", " ", -1))
+				}
+
+				errs <- fErrs
 			}
 		}()
 	}
@@ -83,9 +159,9 @@ func Fetch(ctx context.Context, req *pb.FetchRequest, repo fetchRepo, dumps *dum
 	res.Redirects = int32(length)
 
 	for i := 1; i <= batches; i++ {
-		for _, err := range <-errs {
+		for title, err := range <-errs {
 			if err != nil {
-				log.Println(err)
+				log.Println(fmt.Sprintf("title: %s err: %v", title, err))
 				res.Errors++
 			} else {
 				res.Redirects--
@@ -94,53 +170,4 @@ func Fetch(ctx context.Context, req *pb.FetchRequest, repo fetchRepo, dumps *dum
 	}
 
 	return res, nil
-}
-
-func fetchWorker(ctx context.Context, titles []string, proj *models.Project, repo fetchRepo, mwiki *mediawiki.Client) []error {
-	errs := make([]error, 0)
-	data, err := mwiki.PagesData(ctx, titles...)
-
-	if err != nil {
-		errs = append(errs, err)
-	}
-
-	for title, meta := range data {
-		page := &models.Page{
-			Title:   title,
-			QID:     meta.Pageprops.WikibaseItem,
-			PID:     meta.PageID,
-			NsID:    meta.Ns,
-			Lang:    proj.Lang,
-			DbName:  proj.DbName,
-			SiteURL: proj.SiteURL,
-		}
-		query := func(q *orm.Query) *orm.Query {
-			return q.
-				Where("title = ? and db_name = ?", page.Title, page.DbName)
-		}
-
-		if len(meta.Revisions) <= 0 {
-			log.Printf("db_name: %s, title: %s, err: revisions not found\n", meta.Title, page.DbName)
-			continue
-		}
-
-		page.SetRevision(meta.LastRevID, meta.Revisions[0].Timestamp)
-		created, err := repo.SelectOrCreate(ctx, page, query)
-
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		if !created {
-			page.SetRevision(meta.LastRevID, meta.Revisions[0].Timestamp)
-			_, err := repo.Update(ctx, page, query)
-			errs = append(errs, err)
-			continue
-		}
-
-		errs = append(errs, nil)
-	}
-
-	return errs
 }

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"okapi-data-service/queues/pagedelete"
+	"okapi-data-service/schema/v3"
 	"testing"
 	"time"
 
@@ -21,6 +22,13 @@ const pagemoveTestQueueName = "queue/pagedelete"
 const pagemoveTestName = "stream/pagemove"
 const pagemoveTestTitle = "ninja"
 const pagemoveTestDbName = "ninjas"
+const pagemoveTestUserID = 10
+const pagemoveTestUserText = "unknown"
+const pagemoveTestUserEditCount = 100
+const pagemoveTestUserIsBot = false
+
+var pagemoveTestUserRegistrationDt = time.Now()
+var pagemoveTestUserGroups = []string{"bot", "admin"}
 
 type pagemoveRedisMock struct {
 	mock.Mock
@@ -48,13 +56,27 @@ func TestPagemove(t *testing.T) {
 
 	date := time.Now().Add(24 * time.Hour)
 	evt := new(eventstream.PageMove)
-	evt.Data.PageTitle = pagemoveTestTitle
+	evt.Data.PriorState.PageTitle = pagemoveTestTitle
 	evt.Data.Database = pagemoveTestDbName
 	evt.Data.Meta.Dt = date
+	evt.Data.Performer.UserID = pagemoveTestUserID
+	evt.Data.Performer.UserText = pagemoveTestUserText
+	evt.Data.Performer.UserEditCount = pagemoveTestUserEditCount
+	evt.Data.Performer.UserGroups = pagemoveTestUserGroups
+	evt.Data.Performer.UserIsBot = pagemoveTestUserIsBot
+	evt.Data.Performer.UserRegistrationDt = pagemoveTestUserRegistrationDt
 
 	data, err := json.Marshal(&pagedelete.Data{
 		Title:  pagemoveTestTitle,
 		DbName: pagemoveTestDbName,
+		Editor: &schema.Editor{
+			Identifier:  pagemoveTestUserID,
+			Name:        pagemoveTestUserText,
+			EditCount:   pagemoveTestUserEditCount,
+			Groups:      pagemoveTestUserGroups,
+			IsBot:       pagemoveTestUserIsBot,
+			DateStarted: &pagemoveTestUserRegistrationDt,
+		},
 	})
 	assert.NoError(err)
 

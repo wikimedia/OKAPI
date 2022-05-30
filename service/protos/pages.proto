@@ -8,8 +8,8 @@ option go_package = "okapi-data-service/protos";
 service Pages {
   rpc Index(IndexRequest) returns (IndexResponse);
   rpc Fetch(FetchRequest) returns (FetchResponse);
-  rpc Pull(PullRequest) returns (PullResponse);
   rpc Export(ExportRequest) returns (ExportResponse);
+  rpc Copy(CopyRequest) returns (CopyResponse);
 }
 
 // Index io description
@@ -25,6 +25,8 @@ message FetchRequest {
   int32 workers = 1;
   int32 batch = 2;
   string db_name = 3;
+  int32 ns = 4;
+  bool failed = 5;
 }
 
 message FetchResponse {
@@ -32,19 +34,6 @@ message FetchResponse {
   int32 errors = 2;
   int32 redirects = 3;
 }
-
-// Pull io description
-message PullRequest {
-  int32 workers = 1;
-  int32 limit = 2;
-  string db_name = 3;
-}
-
-message PullResponse {
-  int32 total = 1;
-  int32 errors = 2;
-}
-
 
 // Export io description
 enum ContentType {
@@ -55,11 +44,24 @@ enum ContentType {
 
 message ExportRequest {
   string db_name = 1;
-  ContentType content_type = 2;
+  ContentType content_type = 2 [deprecated = true];
   int32 workers = 3;
+  int32 ns = 4;
 }
 
 message ExportResponse {
+  int32 total = 1;
+  int32 errors = 2;
+}
+
+// Copy io description
+message CopyRequest {
+  int32 workers = 1;
+  repeated string db_names = 2;
+  int32 ns = 3;
+}
+
+message CopyResponse {
   int32 total = 1;
   int32 errors = 2;
 }

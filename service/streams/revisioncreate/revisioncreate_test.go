@@ -6,7 +6,8 @@ import (
 	"errors"
 	"io/ioutil"
 	"log"
-	"okapi-data-service/queues/pagepull"
+	"okapi-data-service/queues/pagefetch"
+	"okapi-data-service/schema/v3"
 	"okapi-data-service/streams/utils"
 	"testing"
 	"time"
@@ -18,12 +19,21 @@ import (
 )
 
 const revisioncreateTestExpire = time.Hour * 24
-const revisioncreateTestQueueName = "queue/pagepull"
+const revisioncreateTestQueueName = "queue/pagefetch"
 const revisioncreateTestName = "stream/revisioncreate"
 const revisioncreateTestTitle = "ninja"
 const revisioncreateTestDbName = "ninjas"
 const revisioncreateSiteURL = "en.wikipedia.org"
 const revisioncreateLang = "en"
+const revisioncreateNamespace = 14
+const revisioncreateRevID = 144
+const revisioncreateTestUserID = 10
+const revisioncreateTestUserText = "unknown"
+const revisioncreateTestUserEditCount = 100
+const revisioncreateTestUserIsBot = false
+
+var revisioncreateTestUserRegistrationDt = time.Now()
+var revisioncreateTestUserGroups = []string{"bot", "admin"}
 
 type revisioncreateRedisMock struct {
 	mock.Mock
@@ -51,16 +61,34 @@ func TestRevisioncreate(t *testing.T) {
 
 	date := time.Now().Add(24 * time.Hour)
 	evt := new(eventstream.RevisionCreate)
+	evt.Data.PageNamespace = revisioncreateNamespace
+	evt.Data.RevID = revisioncreateRevID
 	evt.Data.PageTitle = revisioncreateTestTitle
 	evt.Data.Database = revisioncreateTestDbName
 	evt.Data.Meta.Domain = revisioncreateSiteURL
 	evt.Data.Meta.Dt = date
+	evt.Data.Performer.UserID = revisioncreateTestUserID
+	evt.Data.Performer.UserText = revisioncreateTestUserText
+	evt.Data.Performer.UserEditCount = revisioncreateTestUserEditCount
+	evt.Data.Performer.UserGroups = revisioncreateTestUserGroups
+	evt.Data.Performer.UserIsBot = revisioncreateTestUserIsBot
+	evt.Data.Performer.UserRegistrationDt = revisioncreateTestUserRegistrationDt
 
-	data, err := json.Marshal(&pagepull.Data{
-		Title:   revisioncreateTestTitle,
-		DbName:  revisioncreateTestDbName,
-		SiteURL: utils.SiteURL(revisioncreateSiteURL),
-		Lang:    revisioncreateLang,
+	data, err := json.Marshal(&pagefetch.Data{
+		Title:     revisioncreateTestTitle,
+		DbName:    revisioncreateTestDbName,
+		SiteURL:   utils.SiteURL(revisioncreateSiteURL),
+		Lang:      revisioncreateLang,
+		Namespace: revisioncreateNamespace,
+		Revision:  revisioncreateRevID,
+		Editor: &schema.Editor{
+			Identifier:  revisioncreateTestUserID,
+			Name:        revisioncreateTestUserText,
+			EditCount:   revisioncreateTestUserEditCount,
+			Groups:      revisioncreateTestUserGroups,
+			IsBot:       revisioncreateTestUserIsBot,
+			DateStarted: &revisioncreateTestUserRegistrationDt,
+		},
 	})
 	assert.NoError(err)
 

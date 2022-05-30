@@ -9,16 +9,19 @@ import (
 	"okapi-data-service/lib/env"
 	"okapi-data-service/lib/pg"
 	store "okapi-data-service/lib/redis"
-	"okapi-data-service/server/pages/content"
+	"okapi-data-service/server/pages/fetch"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/protsack-stephan/dev-toolkit/lib/s3"
 
+	"okapi-data-service/lib/elastic"
+	"okapi-data-service/pkg/page"
 	"okapi-data-service/pkg/worker"
 	"okapi-data-service/queues/pagedelete"
-	"okapi-data-service/queues/pagepull"
+	"okapi-data-service/queues/pagefetch"
 	"okapi-data-service/queues/pagevisibility"
 	"os"
 	"os/signal"
@@ -47,6 +50,7 @@ func main() {
 
 	setup := []func() error{
 		env.Init,
+		elastic.Init,
 		store.Init,
 		pg.Init,
 		aws.Init,
@@ -58,39 +62,47 @@ func main() {
 		}
 	}
 
-	producer, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": env.KafkaBroker,
-		"message.max.bytes": "20971520",
-	})
+	conf := kafka.ConfigMap{
+		"bootstrap.servers":      env.KafkaBroker,
+		"message.max.bytes":      "20971520",
+		"go.batch.producer":      true,
+		"queue.buffering.max.ms": 10,
+		"go.delivery.reports":    false,
+	}
+
+	if len(env.KafkaCreds.Username) > 0 && len(env.KafkaCreds.Password) > 0 {
+		conf["security.protocol"] = "SASL_SSL"
+		conf["sasl.mechanism"] = "SCRAM-SHA-512"
+		conf["sasl.username"] = env.KafkaCreds.Username
+		conf["sasl.password"] = env.KafkaCreds.Password
+	}
+
+	producer, err := kafka.NewProducer(&conf)
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	html, json, wikitext := fs.NewStorage(env.HTMLVol), fs.NewStorage(env.JSONVol), fs.NewStorage(env.WTVol)
+	json := fs.NewStorage(env.JSONVol)
 	remote := s3.NewStorage(aws.Session(), env.AWSBucket)
 	store := store.Client()
+	elastic := elastic.Client()
 	repo := db.NewRepository(pg.Conn())
-	storage := &content.Storage{
-		HTML:   html,
-		WText:  wikitext,
-		JSON:   json,
-		Remote: remote,
-	}
+	storage := &page.Storage{Local: json, Remote: remote}
 
 	queues := []queue{
 		{
-			workers: 5,
+			workers: env.PagedeleteWorkers,
 			name:    pagedelete.Name,
-			worker:  pagedelete.Worker(repo, storage, producer),
+			worker:  pagedelete.Worker(repo, storage, producer, elastic),
 		},
 		{
-			workers: 25,
-			name:    pagepull.Name,
-			worker:  pagepull.Worker(repo, storage, producer),
+			workers: env.PagefetchWorkers,
+			name:    pagefetch.Name,
+			worker:  pagefetch.Worker(new(fetch.Factory), storage, repo, producer),
 		},
 		{
-			workers: 1,
+			workers: env.PagevisibilityWorkers,
 			name:    pagevisibility.Name,
 			worker:  pagevisibility.Worker(repo, storage, producer),
 		},
@@ -105,7 +117,7 @@ func main() {
 			go func(q queue) {
 				defer wg.Done()
 
-				items := make(chan []byte, q.workers)
+				items := make(chan []byte)
 
 				wg.Add(q.workers)
 				for i := 1; i <= q.workers; i++ {
@@ -114,27 +126,30 @@ func main() {
 
 						for data := range items {
 							if err := q.worker(context.Background(), data); err != nil {
-								log.Printf("name: %s, payload: %s, error: %v\n", q.name, string(data), err)
+								log.Printf("name: %s, payload: %s, warning: %s\n", q.name, string(data), strings.ReplaceAll(err.Error(), "\n", ""))
 							}
+
+							time.Sleep(time.Millisecond * 100)
 						}
 					}()
 				}
 
 				for {
-					results, err := store.BLPop(ctx, time.Second*1, q.name).Result()
+					results, err := store.BLPop(ctx, time.Second*60, q.name).Result()
 
 					if err != nil && err != redis.Nil {
-						log.Printf("%s: %v\n", q.name, err)
+						log.Printf("%s: rd - %v\n", q.name, err)
+					}
+
+					if err == context.Canceled {
 						close(items)
 						break
 					}
 
-					if len(results) > 0 && results[0] == q.name {
-						results = results[1:]
-					}
-
 					for _, result := range results {
-						items <- []byte(result)
+						if result != q.name {
+							items <- []byte(result)
+						}
 					}
 				}
 			}(q)
@@ -144,4 +159,6 @@ func main() {
 	log.Println(<-sign)
 	cancel()
 	wg.Wait()
+	producer.Flush(60000)
+	producer.Close()
 }

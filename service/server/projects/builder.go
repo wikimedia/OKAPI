@@ -3,6 +3,7 @@ package projects
 import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/protsack-stephan/dev-toolkit/pkg/repository"
+	"github.com/protsack-stephan/dev-toolkit/pkg/storage"
 	"github.com/protsack-stephan/mediawiki-api-client"
 )
 
@@ -33,6 +34,12 @@ func (bu *Builder) Repository(repo repository.Repository) *Builder {
 // Elastic set elasticsearch client
 func (bu *Builder) Elastic(elastic *elasticsearch.Client) *Builder {
 	bu.srv.elastic = elastic
+	return bu
+}
+
+// RemoteStorage set new remote storage
+func (bu *Builder) RemoteStorage(store storage.Storage) *Builder {
+	bu.srv.remoteStore = store
 	return bu
 }
 

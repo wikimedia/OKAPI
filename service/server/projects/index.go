@@ -62,7 +62,6 @@ func Index(ctx context.Context, req *pb.IndexRequest, elastic *elasticsearch.Cli
 				LangName:      proj.Language.Name,
 				LangLocalName: proj.Language.LocalName,
 				Active:        proj.Active,
-				Size:          proj.JSONSize,
 				UpdatedAt:     proj.UpdatedAt,
 			})
 

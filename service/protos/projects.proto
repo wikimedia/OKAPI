@@ -8,6 +8,8 @@ option go_package = "okapi-data-service/protos";
 service Projects {
   rpc Index(IndexRequest) returns (IndexResponse);
   rpc Fetch(FetchRequest) returns (FetchResponse); 
+  rpc Aggregate(AggregateRequest) returns (AggregateResponse);
+  rpc AggregateCopy(AggregateCopyRequest) returns (AggregateCopyResponse);
 }
 
 // Index io description
@@ -18,7 +20,23 @@ message IndexResponse {
   int32 errors = 2;
 }
 
-// Projects io description
+// Fetch io description
 message FetchRequest {}
 
 message FetchResponse {}
+
+// Aggregate io description
+message AggregateRequest {}
+
+message AggregateResponse {
+  int32 total = 1;
+  int32 errors = 2;
+}
+
+// Aggregate copy io description
+message AggregateCopyRequest {}
+
+message AggregateCopyResponse {
+  int32 total = 1;
+  int32 errors = 2;
+}

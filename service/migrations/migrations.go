@@ -4,30 +4,32 @@ import (
 	"log"
 	"okapi-data-service/lib/env"
 	"os"
+	"time"
 
 	"github.com/go-pg/pg/v10"
 	migrations "github.com/robinjoseph08/go-pg-migrations/v3"
 )
 
-const directory = "/migrations"
+const directory = "./migrations"
 
 func main() {
-	err := env.Init()
-
-	if err != nil {
+	if err := env.Init(); err != nil {
 		log.Panic(err)
 	}
 
 	db := pg.Connect(&pg.Options{
-		Addr:     env.DBAddr,
-		User:     env.DBUser,
-		Database: env.DBName,
-		Password: env.DBPassword,
+		MaxRetries:      5,
+		MinRetryBackoff: 2 * time.Second,
+		MaxRetryBackoff: 10 * time.Second,
+		Addr:            env.DBAddr,
+		User:            env.DBUser,
+		Database:        env.DBName,
+		Password:        env.DBPassword,
 	})
 
-	err = migrations.Run(db, directory, os.Args)
+	defer db.Close()
 
-	if err != nil {
+	if err := migrations.Run(db, directory, os.Args); err != nil {
 		log.Panic(err)
 	}
 }

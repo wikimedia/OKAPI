@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
-	"net/http/httptest"
+	"os"
 
 	pb "okapi-data-service/server/pages/protos"
 	"testing"
@@ -18,20 +18,18 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 )
 
-func createPagesDialer(url string) func(context.Context, string) (net.Conn, error) {
+func createPagesDialer() func(context.Context, string) (net.Conn, error) {
 	lis := bufconn.Listen(1024 * 1024)
 	srv := grpc.NewServer()
 
 	pb.RegisterPagesServer(
 		srv,
 		NewBuilder().
+			RemoteStorage(&storage.Mock{}).
 			Repository(&repository.Mock{}).
 			GenStorage(&storage.Mock{}).
-			HTMLStorage(&storage.Mock{}).
 			JSONStorage(&storage.Mock{}).
-			WTStorage(&storage.Mock{}).
 			Dumps(dumps.NewBuilder().
-				URL(url).
 				Build()).
 			Build())
 
@@ -47,12 +45,10 @@ func createPagesDialer(url string) func(context.Context, string) (net.Conn, erro
 }
 
 func TestPages(t *testing.T) {
-	srv := httptest.NewServer(createFetchServer())
-	defer srv.Close()
 	assert := assert.New(t)
 
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "", grpc.WithInsecure(), grpc.WithContextDialer(createPagesDialer(srv.URL)))
+	conn, err := grpc.DialContext(ctx, "", grpc.WithInsecure(), grpc.WithContextDialer(createPagesDialer()))
 	assert.NoError(err)
 	defer conn.Close()
 
@@ -64,9 +60,14 @@ func TestPages(t *testing.T) {
 	_, err = client.Fetch(ctx, new(pb.FetchRequest))
 	assert.Error(err)
 
-	_, err = client.Pull(ctx, new(pb.PullRequest))
-	assert.NoError(err)
-
 	_, err = client.Export(ctx, new(pb.ExportRequest))
 	assert.Error(err)
+
+	_, err = client.Copy(ctx, new(pb.CopyRequest))
+	assert.NoError(err)
+}
+
+func TestMain(m *testing.M) {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	os.Exit(m.Run())
 }

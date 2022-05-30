@@ -22,7 +22,8 @@ import (
 
 const indexTestElasticURL = "/%s/_bulk"
 const indexTestID = 1
-const indexTestTitle = "ninja"
+const indexTestTitle = "nin_ja"
+const indexTestName = "nin ja"
 const indexTestNsID = 2
 const indexTestDbName = "enwiki"
 const indexTestLang = "en"
@@ -80,6 +81,7 @@ func createIndexServer(assert *assert.Assertions) http.Handler {
 		assert.NoError(json.Unmarshal([]byte(data[1]), doc))
 		assert.Equal(strconv.Itoa(indexTestID), action["index"]["_id"])
 		assert.Equal(indexTestTitle, doc.Title)
+		assert.Equal(indexTestName, doc.Name)
 		assert.Equal(indexTestNsID, doc.NsID)
 		assert.Equal(indexTestDbName, doc.DbName)
 		assert.Equal(indexTestLang, doc.Lang)

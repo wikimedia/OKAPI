@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"okapi-data-service/queues/pagedelete"
+	"okapi-data-service/schema/v3"
 	"testing"
 	"time"
 
@@ -21,6 +22,13 @@ const pagedeleteTestQueueName = "queue/pagedelete"
 const pagedeleteTestName = "stream/pagedelete"
 const pagedeleteTestTitle = "ninja"
 const pagedeleteTestDbName = "ninjas"
+const pagedeleteTestUserID = 10
+const pagedeleteTestUserText = "unknown"
+const pagedeleteTestUserEditCount = 100
+const pagedeleteTestUserIsBot = false
+
+var pagedeleteTestUserRegistrationDt = time.Now()
+var pagedeleteTestUserGroups = []string{"bot", "admin"}
 
 type pagedeleteRedisMock struct {
 	mock.Mock
@@ -51,10 +59,24 @@ func TestPagedelete(t *testing.T) {
 	evt.Data.PageTitle = pagedeleteTestTitle
 	evt.Data.Database = pagedeleteTestDbName
 	evt.Data.Meta.Dt = date
+	evt.Data.Performer.UserID = pagedeleteTestUserID
+	evt.Data.Performer.UserText = pagedeleteTestUserText
+	evt.Data.Performer.UserEditCount = pagedeleteTestUserEditCount
+	evt.Data.Performer.UserGroups = pagedeleteTestUserGroups
+	evt.Data.Performer.UserIsBot = pagedeleteTestUserIsBot
+	evt.Data.Performer.UserRegistrationDt = pagedeleteTestUserRegistrationDt
 
 	data, err := json.Marshal(&pagedelete.Data{
 		Title:  pagedeleteTestTitle,
 		DbName: pagedeleteTestDbName,
+		Editor: &schema.Editor{
+			Identifier:  pagedeleteTestUserID,
+			Name:        pagedeleteTestUserText,
+			EditCount:   pagedeleteTestUserEditCount,
+			Groups:      pagedeleteTestUserGroups,
+			IsBot:       pagedeleteTestUserIsBot,
+			DateStarted: &pagedeleteTestUserRegistrationDt,
+		},
 	})
 	assert.NoError(err)
 

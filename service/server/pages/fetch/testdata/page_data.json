@@ -1,0 +1,376 @@
+{
+    "continue": {
+        "clcontinue": "9228|Global_natural_environment",
+        "tlcontinue": "9228|10|Citation",
+        "wbeucontinue": "46396|Q7430520|S",
+        "rdcontinue": "Earth|3520701",
+        "continue": "||info|revisions|pageprops"
+    },
+    "query": {
+        "pages": [
+            {
+                "pageid": 9228,
+                "ns": 0,
+                "title": "Earth",
+                "contentmodel": "wikitext",
+                "pagelanguage": "en",
+                "pagelanguagehtmlcode": "en",
+                "pagelanguagedir": "ltr",
+                "touched": "2021-06-23T12:11:02Z",
+                "lastrevid": 1029525281,
+                "length": 178979,
+                "protection": [
+                    {
+                        "type": "edit",
+                        "level": "autoconfirmed",
+                        "expiry": "infinity"
+                    },
+                    {
+                        "type": "move",
+                        "level": "sysop",
+                        "expiry": "infinity"
+                    }
+                ],
+                "restrictiontypes": [
+                    "edit",
+                    "move"
+                ],
+                "fullurl": "https://en.wikipedia.org/wiki/Earth",
+                "editurl": "https://en.wikipedia.org/w/index.php?title=Earth&action=edit",
+                "canonicalurl": "https://en.wikipedia.org/wiki/Earth",
+                "displaytitle": "Earth",
+                "categories": [
+                    {
+                        "ns": 14,
+                        "title": "Category:All Wikipedia articles written in American English",
+                        "hidden": true
+                    },
+                    {
+                        "ns": 14,
+                        "title": "Category:All articles containing potentially dated statements",
+                        "hidden": true
+                    },
+                    {
+                        "ns": 14,
+                        "title": "Category:Articles containing Ancient Greek (to 1453)-language text",
+                        "hidden": true
+                    },
+                    {
+                        "ns": 14,
+                        "title": "Category:Articles containing potentially dated statements from April 2020",
+                        "hidden": true
+                    },
+                    {
+                        "ns": 14,
+                        "title": "Category:Articles containing potentially dated statements from November 2018",
+                        "hidden": true
+                    },
+                    {
+                        "ns": 14,
+                        "title": "Category:Articles with hAudio microformats",
+                        "hidden": true
+                    },
+                    {
+                        "ns": 14,
+                        "title": "Category:Articles with short description",
+                        "hidden": true
+                    },
+                    {
+                        "ns": 14,
+                        "title": "Category:Astronomical objects known since antiquity",
+                        "hidden": false
+                    },
+                    {
+                        "ns": 14,
+                        "title": "Category:Earth",
+                        "hidden": false
+                    },
+                    {
+                        "ns": 14,
+                        "title": "Category:Featured articles",
+                        "hidden": false
+                    }
+                ],
+                "revisions": [
+                    {
+                        "revid": 1029525281,
+                        "parentid": 1029524599,
+                        "user": "Femkemilene",
+                        "timestamp": "2021-06-20T14:38:31Z",
+                        "slots": {
+                            "main": {
+                                "contentmodel": "wikitext",
+                                "contentformat": "text/x-wiki",
+                                "content": "...Earth wikitext goes here..."
+                            }
+                        },
+                        "comment": "Undid revision 1029524599 by [[Special:Contributions/Bumsowee|Bumsowee]] ([[User talk:Bumsowee|talk]]) that parameter is for distance; if you have source please do update correct parameter :).",
+                        "tags": [
+                            "mw-undo"
+                        ],
+                        "oresscores": {
+                            "articlequality": {
+                                "Stub": 0.73
+                            },
+                            "damaging": {
+                                "true": 0.008,
+                                "false": 0.992
+                            },
+                            "goodfaith": {
+                                "true": 0.997,
+                                "false": 0.0030000000000000027
+                            }
+                        }
+                    }
+                ],
+                "templates": [
+                    {
+                        "ns": 0,
+                        "title": "Earth"
+                    },
+                    {
+                        "ns": 10,
+                        "title": "Template:About"
+                    },
+                    {
+                        "ns": 10,
+                        "title": "Template:Anchor"
+                    },
+                    {
+                        "ns": 10,
+                        "title": "Template:As of"
+                    },
+                    {
+                        "ns": 10,
+                        "title": "Template:Authority control"
+                    },
+                    {
+                        "ns": 10,
+                        "title": "Template:Big"
+                    },
+                    {
+                        "ns": 10,
+                        "title": "Template:CO2"
+                    },
+                    {
+                        "ns": 10,
+                        "title": "Template:Catalog lookup link"
+                    },
+                    {
+                        "ns": 10,
+                        "title": "Template:Category handler"
+                    },
+                    {
+                        "ns": 10,
+                        "title": "Template:Chem2"
+                    }
+                ],
+                "wbentityusage": {
+                    "Q2": {
+                        "aspects": [
+                            "C",
+                            "D.en",
+                            "O",
+                            "S",
+                            "T"
+                        ]
+                    }
+                },
+                "pageprops": {
+                    "wikibase_item": "Q2"
+                },
+                "redirects": [
+                    {
+                        "pageid": 9215,
+                        "ns": 0,
+                        "title": "EartH"
+                    },
+                    {
+                        "pageid": 307601,
+                        "ns": 0,
+                        "title": "Sol 3"
+                    },
+                    {
+                        "pageid": 603544,
+                        "ns": 0,
+                        "title": "The Earth"
+                    },
+                    {
+                        "pageid": 896072,
+                        "ns": 0,
+                        "title": "Earth (Planet)"
+                    },
+                    {
+                        "pageid": 1096589,
+                        "ns": 0,
+                        "title": "Surface area of earth"
+                    },
+                    {
+                        "pageid": 1191327,
+                        "ns": 0,
+                        "title": "Terra (planet)"
+                    },
+                    {
+                        "pageid": 1324754,
+                        "ns": 0,
+                        "title": "The planet earth"
+                    },
+                    {
+                        "pageid": 1415438,
+                        "ns": 0,
+                        "title": "Terra (name for the earth)"
+                    },
+                    {
+                        "pageid": 1788541,
+                        "ns": 0,
+                        "title": "Local Planet"
+                    },
+                    {
+                        "pageid": 2742548,
+                        "ns": 0,
+                        "title": "Globe (Earth)"
+                    }
+                ]
+            },
+            {
+                "pageid": 19331,
+                "ns": 0,
+                "title": "Moon",
+                "contentmodel": "wikitext",
+                "pagelanguage": "en",
+                "pagelanguagehtmlcode": "en",
+                "pagelanguagedir": "ltr",
+                "touched": "2021-06-23T12:11:08Z",
+                "lastrevid": 1028763251,
+                "length": 226286,
+                "protection": [
+                    {
+                        "type": "edit",
+                        "level": "autoconfirmed",
+                        "expiry": "infinity"
+                    },
+                    {
+                        "type": "move",
+                        "level": "sysop",
+                        "expiry": "infinity"
+                    }
+                ],
+                "restrictiontypes": [
+                    "edit",
+                    "move"
+                ],
+                "fullurl": "https://en.wikipedia.org/wiki/Moon",
+                "editurl": "https://en.wikipedia.org/w/index.php?title=Moon&action=edit",
+                "canonicalurl": "https://en.wikipedia.org/wiki/Moon",
+                "displaytitle": "Moon",
+                "revisions": [
+                    {
+                        "revid": 1028763251,
+                        "parentid": 1028692850,
+                        "user": "Nsae Comp",
+                        "timestamp": "2021-06-15T21:33:04Z",
+                        "slots": {
+                            "main": {
+                                "contentmodel": "wikitext",
+                                "contentformat": "text/x-wiki",
+                                "content": "...Moon wikitext goes here..."
+                            }
+                        },
+                        "comment": "Its more useful to state that it shows the near side than just saying that it is viewed from Earth (which evidently can produce a range of views of the Moon)",
+                        "tags": [
+                            "mobile edit",
+                            "mobile web edit",
+                            "advanced mobile edit"
+                        ],
+                        "oresscores": {
+                            "articlequality": {
+                                "Stub": 0.719
+                            },
+                            "damaging": {
+                                "true": 0.048,
+                                "false": 0.952
+                            },
+                            "goodfaith": {
+                                "true": 0.983,
+                                "false": 0.017000000000000015
+                            }
+                        }
+                    }
+                ],
+                "wbentityusage": {
+                    "Q405": {
+                        "aspects": [
+                            "C",
+                            "D.en",
+                            "O",
+                            "S",
+                            "T"
+                        ]
+                    }
+                },
+                "pageprops": {
+                    "wikibase_item": "Q405"
+                }
+            },
+            {
+                "pageid": 46396,
+                "ns": 0,
+                "title": "Ninja",
+                "contentmodel": "wikitext",
+                "pagelanguage": "en",
+                "pagelanguagehtmlcode": "en",
+                "pagelanguagedir": "ltr",
+                "touched": "2021-06-23T12:11:37Z",
+                "lastrevid": 1024017583,
+                "length": 71837,
+                "protection": [
+                    {
+                        "type": "edit",
+                        "level": "autoconfirmed",
+                        "expiry": "infinity"
+                    },
+                    {
+                        "type": "move",
+                        "level": "autoconfirmed",
+                        "expiry": "infinity"
+                    }
+                ],
+                "restrictiontypes": [
+                    "edit",
+                    "move"
+                ],
+                "fullurl": "https://en.wikipedia.org/wiki/Ninja",
+                "editurl": "https://en.wikipedia.org/w/index.php?title=Ninja&action=edit",
+                "canonicalurl": "https://en.wikipedia.org/wiki/Ninja",
+                "displaytitle": "Ninja",
+                "revisions": [
+                    {
+                        "revid": 1024017583,
+                        "parentid": 1022430592,
+                        "user": "Rsjaffe",
+                        "timestamp": "2021-05-19T16:51:20Z",
+                        "slots": {
+                            "main": {
+                                "contentmodel": "wikitext",
+                                "contentformat": "text/x-wiki",
+                                "content": "...Ninja wikitext goes here..."
+                            }
+                        },
+                        "comment": "clean up, [[WP:AWB/T|typo(s) fixed]]: long distance → long-distance, ’s → 's",
+                        "tags": [
+                            "AWB"
+                        ],
+                        "oresscores": {
+                            "articlequality": {
+                                "Stub": 0.718
+                            }
+                        }
+                    }
+                ],
+                "pageprops": {
+                    "wikibase_item": "Q9402"
+                }
+            }
+        ]
+    }
+}

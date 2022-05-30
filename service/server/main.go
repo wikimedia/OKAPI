@@ -35,7 +35,8 @@ var params = []grpc.ServerOption{
 }
 
 func main() {
-	os.Setenv("TZ", "UTC")
+	os.Setenv("TZ", "UTC") // #nosec G104
+	log.SetFlags(log.LstdFlags | log.Llongfile)
 
 	setup := []func() error{
 		env.Init,

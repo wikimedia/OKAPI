@@ -69,11 +69,6 @@ func TestPageSetRevision(t *testing.T) {
 	for _, testCase := range testCases {
 		page.SetRevision(testCase.rev, testCase.dt)
 		assert.Equal(t, testCase.rev, page.Revision)
-		assert.Equal(t, testCase.rev, page.Revisions[0])
 		assert.Equal(t, testCase.dt, page.RevisionDt)
-	}
-
-	for i := len(testCases) - 1; i > 0; i-- {
-		assert.Equal(t, page.Revisions[revisions-i], testCases[i].rev)
 	}
 }

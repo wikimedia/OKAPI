@@ -3,16 +3,20 @@ package pagedelete
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"okapi-data-service/models"
-	"okapi-data-service/pkg/topics"
+	"okapi-data-service/pkg/index"
+	"okapi-data-service/pkg/producer"
 	"okapi-data-service/pkg/worker"
-	"okapi-data-service/schema/v1"
-	"okapi-data-service/server/pages/content"
+	"okapi-data-service/schema/v3"
+	"strconv"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/go-pg/pg/v10/orm"
 	"github.com/go-redis/redis/v8"
 	"github.com/protsack-stephan/dev-toolkit/pkg/repository"
+	"github.com/protsack-stephan/dev-toolkit/pkg/storage"
 )
 
 // Name redis key for the queue
@@ -20,8 +24,9 @@ const Name string = "queue/pagedelete"
 
 // Data item of the queue
 type Data struct {
-	Title  string `json:"title"`
-	DbName string `json:"db_name"`
+	Title  string         `json:"title"`
+	DbName string         `json:"db_name"`
+	Editor *schema.Editor `json:"editor,omitempty"`
 }
 
 // Repo all the needed repositories to call delete
@@ -30,8 +35,14 @@ type Repo interface {
 	repository.Finder
 }
 
+// Storage all the needed storages to call delete
+type Storage interface {
+	storage.Getter
+	storage.Deleter
+}
+
 // Worker processing function
-func Worker(repo Repo, stores content.Deleter, producer topics.Producer) worker.Worker {
+func Worker(repo Repo, storage Storage, producer producer.Producer, elastic *elasticsearch.Client) worker.Worker {
 	return func(ctx context.Context, payload []byte) error {
 		data := new(Data)
 
@@ -52,31 +63,61 @@ func Worker(repo Repo, stores content.Deleter, producer topics.Producer) worker.
 			return err
 		}
 
-		if err := stores.Delete(ctx, page); err != nil {
-			return err
-		}
-
-		msg := content.NewStructured(page)
-		value, err := json.Marshal(msg)
+		rc, err := storage.Get(page.Path)
 
 		if err != nil {
 			return err
 		}
 
+		evt := new(schema.Page)
+		err = json.NewDecoder(rc).Decode(evt)
+		_ = rc.Close()
+
+		if err != nil {
+			return err
+		}
+
+		if err := storage.Delete(page.Path); err != nil {
+			return err
+		}
+
 		key, err := json.Marshal(schema.PageKey{
-			Title:  data.Title,
-			DbName: data.DbName,
+			Name:     data.Title,
+			IsPartOf: data.DbName,
 		})
 
 		if err != nil {
 			return err
 		}
 
-		return producer.Produce(&kafka.Message{
-			TopicPartition: kafka.TopicPartition{Topic: &topics.PageDelete, Partition: 0},
+		if evt.Version != nil {
+			evt.Version.Editor = data.Editor
+		}
+
+		evt.ArticleBody = nil
+		msg, err := json.Marshal(evt)
+
+		if err != nil {
+			return err
+		}
+
+		producer.ProduceChannel() <- &kafka.Message{
+			TopicPartition: kafka.TopicPartition{Topic: &schema.TopicPageDelete, Partition: 0},
 			Key:            key,
-			Value:          value,
-		}, nil)
+			Value:          msg,
+		}
+
+		res, err := elastic.Delete(index.Page, strconv.Itoa(page.ID))
+
+		if err != nil {
+			return err
+		}
+
+		if res.IsError() {
+			return errors.New(res.String())
+		}
+
+		return nil
 	}
 }
 

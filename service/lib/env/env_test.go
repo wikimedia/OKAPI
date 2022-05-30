@@ -1,12 +1,15 @@
 package env
 
 import (
+	"encoding/json"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+const envTestAWSURL = "http://localhost:9020"
 const envTestAWSRegion = "us-test"
 const envTestAWSBucket = "main"
 const envTestAWSKey = "test4api12key123"
@@ -24,13 +27,17 @@ const envTestElasticUsername = "admin"
 const envTestElasticPassword = "sql"
 
 const envTestGenVol = "./../.gen"
-const envTestHTMLVol = "./../.html"
 const envTestJSONVol = "./../.json"
-const envTestWTVol = "./../.wt"
+const envTestKafkaCreds = `{"username":"admin","password":"12345"}`
 
 const envTestKafkaBroker = "broker"
 
+const envTestPagefetchWorkers = 100
+const envTestPagedeleteWorkers = 200
+const envTestPagevisibilityWorkers = 300
+
 func TestEnv(t *testing.T) {
+	os.Setenv(awsURL, envTestAWSURL)
 	os.Setenv(awsRegion, envTestAWSRegion)
 	os.Setenv(awsBucket, envTestAWSBucket)
 	os.Setenv(awsKey, envTestAWSKey)
@@ -48,16 +55,20 @@ func TestEnv(t *testing.T) {
 	os.Setenv(elasticPassword, envTestElasticPassword)
 
 	os.Setenv(genVol, envTestGenVol)
-	os.Setenv(htmlVol, envTestHTMLVol)
 	os.Setenv(jsonVol, envTestJSONVol)
-	os.Setenv(wtVol, envTestWTVol)
 
 	os.Setenv(kafkaBroker, envTestKafkaBroker)
+	os.Setenv(kafkaCreds, envTestKafkaCreds)
+
+	os.Setenv(pagedeleteWorkers, strconv.Itoa(envTestPagedeleteWorkers))
+	os.Setenv(pagefetchWorkers, strconv.Itoa(envTestPagefetchWorkers))
+	os.Setenv(pagevisibilityWorkers, strconv.Itoa(envTestPagevisibilityWorkers))
 
 	err := Init()
 	assert := assert.New(t)
 	assert.NoError(err)
 
+	assert.Equal(envTestAWSURL, AWSURL)
 	assert.Equal(envTestAWSRegion, AWSRegion)
 	assert.Equal(envTestAWSBucket, AWSBucket)
 	assert.Equal(envTestAWSKey, AWSKey)
@@ -75,9 +86,15 @@ func TestEnv(t *testing.T) {
 	assert.Equal(envTestElasticPassword, ElasticPassword)
 
 	assert.Equal(envTestGenVol, GenVol)
-	assert.Equal(envTestHTMLVol, HTMLVol)
 	assert.Equal(envTestJSONVol, JSONVol)
-	assert.Equal(envTestWTVol, WTVol)
 
 	assert.Equal(envTestKafkaBroker, KafkaBroker)
+
+	creds, err := json.Marshal(KafkaCreds)
+	assert.NoError(err)
+	assert.Equal(envTestKafkaCreds, string(creds))
+
+	assert.Equal(envTestPagedeleteWorkers, PagedeleteWorkers)
+	assert.Equal(envTestPagefetchWorkers, PagefetchWorkers)
+	assert.Equal(envTestPagevisibilityWorkers, PagevisibilityWorkers)
 }

@@ -27,6 +27,7 @@ type DocProject struct {
 type DocPage struct {
 	ID            int       `json:"-"`
 	Title         string    `json:"title"`
+	Name          string    `json:"name"`
 	NsID          int       `json:"ns_id"`
 	DbName        string    `json:"db_name"`
 	Lang          string    `json:"lang"`

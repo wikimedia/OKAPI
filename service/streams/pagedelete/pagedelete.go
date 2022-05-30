@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"okapi-data-service/queues/pagedelete"
+	"okapi-data-service/schema/v3"
 	"okapi-data-service/streams/utils"
 	"time"
 
@@ -21,9 +22,22 @@ func Handler(ctx context.Context, store redis.Cmdable, expire time.Duration) fun
 		var err error
 
 		if !utils.Exclude(evt.Data.Database) && utils.FilterNs(evt.Data.PageNamespace) {
+			editor := &schema.Editor{
+				Identifier: evt.Data.Performer.UserID,
+				Name:       evt.Data.Performer.UserText,
+				EditCount:  evt.Data.Performer.UserEditCount,
+				Groups:     evt.Data.Performer.UserGroups,
+				IsBot:      evt.Data.Performer.UserIsBot,
+			}
+
+			if !evt.Data.Performer.UserRegistrationDt.IsZero() {
+				editor.DateStarted = &evt.Data.Performer.UserRegistrationDt
+			}
+
 			err = pagedelete.Enqueue(ctx, store, &pagedelete.Data{
 				Title:  evt.Data.PageTitle,
 				DbName: evt.Data.Database,
+				Editor: editor,
 			})
 		}
 

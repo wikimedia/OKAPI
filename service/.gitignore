@@ -30,3 +30,5 @@ Thumbs.db
 #tmp
 /.vol
 /server/.vol
+/server/pages/tmp
+/.storage

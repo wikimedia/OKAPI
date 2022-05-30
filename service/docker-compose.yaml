@@ -6,19 +6,52 @@ services:
       context: .
       dockerfile: server/Dockerfile
     volumes:
-      - ./:/var/www/app
+      - ./.vol:/root/.vol
     ports:
       - 50051:50051
     env_file: 
       - ./.env
     depends_on:
-      - cache
       - db
+      - cache
       - search
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
+
+  queues:
+    build: 
+      context: .
+      dockerfile: queues/Dockerfile
+    volumes:
+      - ./.vol:/root/.vol
+    env_file: 
+      - ./.env
+    depends_on:
+      - db
+      - cache
+      - kafka
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  streams:
+    build: 
+      context: .
+      dockerfile: streams/Dockerfile
+    volumes:
+      - ./.vol:/root/.vol
+    env_file: 
+      - ./.env
+    depends_on:
+      - cache
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
   db:
     image: postgres:latest
     command:
@@ -33,6 +66,7 @@ services:
       driver: "json-file"
       options:
         max-size: "10m"
+
   cache:
     image: redis:latest
     ports: 
@@ -43,6 +77,7 @@ services:
       driver: "json-file"
       options:
         max-size: "10m"
+
   search:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
     environment:
@@ -61,3 +96,51 @@ services:
       driver: "json-file"
       options:
         max-size: "10m"
+
+  zoo:
+    image: zookeeper:3.4.9
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+      ZOO_SERVERS: server.1=zoo:2888:3888
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  kafka:
+    image: confluentinc/cp-kafka:5.5.1
+    ports:
+      - "9092:9092"
+      - "9999:9999"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zoo:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+    depends_on:
+      - zoo
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  minio:
+    image: minio/minio:latest
+    ports:
+      - 9000:9000
+      - 9202:9202
+    volumes:
+      - ./.storage:/data
+    env_file:
+      - ./.env
+    command: server /data --console-address :9202

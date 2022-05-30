@@ -5,210 +5,333 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"okapi-data-service/models"
-	"okapi-data-service/schema/v1"
+	"okapi-data-service/schema/v3"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-pg/pg/v10/orm"
-	"github.com/protsack-stephan/mediawiki-api-client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 const pagevisibilityTestTitle = "Earth"
-const pagevisibilityTestDbName = "enwiki"
-const pagevisibilityTestRevision = 1
+
+var pagevisibilityTestDbName = "enwiki"
+var pagevisibilityTestSiteName = "Wikipedia"
+var pagevisibilityTestSiteURL = "http://en.wikipedia.org"
+var pagevisibilityTestSiteCode = "wiki"
+var pagevisibilityTestKey = `{"name":"Earth","is_part_of":"enwiki"}`
+
+const pagevisibilityTestPageID = 9228
+const pagevisibilityTestRev = 12
 const pagevisibilityTestLang = "en"
-const pagevisibilityTestSiteURL = "http://en.wikipedia.org"
-const pagevisibilityTestKafkaKey = `{"title":"Earth","dbName":"enwiki"}`
-const pagevisibilityTestKafkaVal = `{"title":"Earth","pid":0,"revision":1,"dbName":"enwiki","inLanguage":"en","url":{"canonical":"http://en.wikipedia.org/wiki/Earth"},"visible":%v,"dateModified":"0001-01-01T00:00:00Z","articleBody":{"html":"","wikitext":""},"license":["CC BY-SA"]}`
+const pagevisibilityTestNsID = 0
+const pagevisibilityTestNsTitle = "Article"
+const pagevisibilityTestLangLocalName = "English"
 
-type producerMock struct {
-	mock.Mock
-}
+const pagevisibilityTestWikitext = "...wikitext goes here..."
+const pagevisibilityTestHTML = "...HTML goes here..."
 
-func (p *producerMock) Produce(msg *kafka.Message, deliveryChan chan kafka.Event) error {
-	return p.Called(string(msg.Key), string(msg.Value)).Error(0)
-}
+var pagevisibilityTestRevDt = time.Now()
 
 type repoMock struct {
 	mock.Mock
 }
 
 func (r *repoMock) Find(_ context.Context, model interface{}, _ func(*orm.Query) *orm.Query, _ ...interface{}) error {
+	args := r.Called(model)
+
 	switch model := model.(type) {
-	case *models.Page:
-		args := r.Called(*model)
-		model.Title = pagevisibilityTestTitle
+	case *models.Project:
 		model.DbName = pagevisibilityTestDbName
-		model.Revision = pagevisibilityTestRevision
-		model.Lang = pagevisibilityTestLang
 		model.SiteURL = pagevisibilityTestSiteURL
-		return args.Error(0)
+		model.SiteName = pagevisibilityTestSiteName
+		model.SiteCode = pagevisibilityTestSiteCode
+		model.Language = &models.Language{
+			LocalName: pagevisibilityTestLangLocalName,
+			Code:      pagevisibilityTestLang,
+		}
+	case *models.Namespace:
+		model.ID = pagevisibilityTestNsID
+		model.Title = pagevisibilityTestNsTitle
 	}
 
-	return errors.New("unknown call")
+	return args.Error(0)
 }
 
 type storageMock struct {
 	mock.Mock
 }
 
-func (s *storageMock) Delete(_ context.Context, page *models.Page) error {
-	return s.Called(*page).Error(0)
+func (s *storageMock) Get(path string) (io.ReadCloser, error) {
+	args := s.Called(path)
+	return ioutil.NopCloser(strings.NewReader(args.String(0))), args.Error(1)
 }
 
-func (s *storageMock) Pull(_ context.Context, page *models.Page, mwiki *mediawiki.Client) (*schema.Page, error) {
-	args := s.Called(*page)
-	cont := new(schema.Page)
+func (s *storageMock) Delete(path string) error {
+	return s.Called(path).Error(0)
+}
 
-	if err := json.Unmarshal([]byte(args.String(0)), cont); err != nil {
-		return nil, err
+type producerMock struct {
+	mock.Mock
+	msgs chan *kafka.Message
+}
+
+func (p *producerMock) ProduceChannel() chan *kafka.Message {
+	return p.msgs
+}
+
+func newPage() *schema.Page {
+	return &schema.Page{
+		Name:       pagevisibilityTestTitle,
+		Identifier: pagevisibilityTestPageID,
+		Version: &schema.Version{
+			Identifier: pagevisibilityTestRev,
+		},
+		DateModified: &pagevisibilityTestRevDt,
+		URL:          fmt.Sprintf("%s/wiki/%s", pagevisibilityTestSiteURL, pagevisibilityTestTitle),
+		Namespace: &schema.Namespace{
+			Identifier: pagevisibilityTestNsID,
+			Name:       pagevisibilityTestNsTitle,
+		},
+		InLanguage: &schema.Language{
+			Identifier: pagevisibilityTestLang,
+			Name:       pagevisibilityTestLangLocalName,
+		},
+		IsPartOf: &schema.Project{
+			Identifier: pagevisibilityTestDbName,
+			Name:       pagevisibilityTestSiteName,
+		},
+		ArticleBody: &schema.ArticleBody{
+			HTML:     pagevisibilityTestHTML,
+			Wikitext: pagevisibilityTestWikitext,
+		},
+		License: []*schema.License{
+			schema.NewLicense(),
+		},
+	}
+}
+
+func newData(textVisible, commentVisible, userVisible bool) *Data {
+	data := &Data{
+		ID:         pagevisibilityTestPageID,
+		Title:      pagevisibilityTestTitle,
+		Revision:   pagevisibilityTestRev,
+		DbName:     pagevisibilityTestDbName,
+		RevisionDt: pagevisibilityTestRevDt,
+		Lang:       pagevisibilityTestLang,
+		SiteURL:    pagevisibilityTestSiteURL,
 	}
 
-	return cont, args.Error(1)
+	data.Visibility.Text = textVisible
+	data.Visibility.Comment = commentVisible
+	data.Visibility.User = userVisible
+
+	return data
 }
 
 func TestPagevisibility(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
-	data := Data{
-		Title:    pagevisibilityTestTitle,
-		DbName:   pagevisibilityTestDbName,
-		Revision: pagevisibilityTestRevision,
-		Lang:     pagevisibilityTestLang,
-		SiteURL:  pagevisibilityTestSiteURL,
-	}
-	page := models.Page{
-		Title:    pagevisibilityTestTitle,
-		DbName:   pagevisibilityTestDbName,
-		Revision: pagevisibilityTestRevision,
-		Lang:     pagevisibilityTestLang,
-		SiteURL:  pagevisibilityTestSiteURL,
-	}
+	path := fmt.Sprintf("%s/%s.json", pagevisibilityTestDbName, pagevisibilityTestTitle)
 
-	t.Run("worker visible success", func(t *testing.T) {
-		data := data
-		data.Visible = true
-		payload, err := json.Marshal(data)
+	t.Run("worker storage success", func(t *testing.T) {
+		page := newPage()
+		pData, err := json.Marshal(page)
 		assert.NoError(err)
 
-		repo := new(repoMock)
-		repo.On("Find", models.Page{}).Return(nil)
+		page.ArticleBody = nil
+		page.MainEntity = nil
+		page.Visibility = &schema.Visibility{
+			Text:    false,
+			Comment: true,
+			User:    true,
+		}
+		qData, err := json.Marshal(newData(page.Visibility.Text, page.Visibility.Comment, page.Visibility.User))
+		assert.NoError(err)
 
 		store := new(storageMock)
-		store.On("Pull", page).Return(fmt.Sprintf(pagevisibilityTestKafkaVal, "null"), nil)
+		store.On("Get", path).Return(string(pData), nil)
+		store.On("Delete", path).Return(nil)
 
 		producer := new(producerMock)
-		producer.On("Produce", pagevisibilityTestKafkaKey, fmt.Sprintf(pagevisibilityTestKafkaVal, true)).Return(nil)
+		producer.msgs = make(chan *kafka.Message, 1)
 
-		worker := Worker(repo, store, producer)
-		assert.NoError(worker(ctx, payload))
+		assert.NoError(Worker(new(repoMock), store, producer)(ctx, qData))
+		msg := <-producer.ProduceChannel()
+
+		expectMsg, err := json.Marshal(page)
+		assert.NoError(err)
+		assert.Equal(string(expectMsg), string(msg.Value))
+		assert.Equal(pagevisibilityTestKey, string(msg.Key))
 	})
 
-	t.Run("worker visible error", func(t *testing.T) {
-		data := data
-		data.Visible = true
-		payload, err := json.Marshal(data)
+	t.Run("worker storage delete error", func(t *testing.T) {
+		page := newPage()
+		pData, err := json.Marshal(page)
 		assert.NoError(err)
 
-		repo := new(repoMock)
-		repo.On("Find", models.Page{}).Return(nil)
-
-		err = errors.New("can't pull the page")
-		store := new(storageMock)
-		store.On("Pull", page).Return(fmt.Sprintf(pagevisibilityTestKafkaVal, "null"), err)
-
-		worker := Worker(repo, store, new(producerMock))
-		assert.Equal(err, worker(ctx, payload))
-	})
-
-	t.Run("worker visible producer error", func(t *testing.T) {
-		data := data
-		data.Visible = true
-		payload, err := json.Marshal(data)
+		page.ArticleBody = nil
+		page.MainEntity = nil
+		page.Visibility = &schema.Visibility{
+			Text:    false,
+			Comment: true,
+			User:    true,
+		}
+		qData, err := json.Marshal(newData(page.Visibility.Text, page.Visibility.Comment, page.Visibility.User))
 		assert.NoError(err)
 
-		repo := new(repoMock)
-		repo.On("Find", models.Page{}).Return(nil)
-
 		store := new(storageMock)
-		store.On("Pull", page).Return(fmt.Sprintf(pagevisibilityTestKafkaVal, "null"), nil)
-
-		err = errors.New("cluster is offline")
-		producer := new(producerMock)
-		producer.On("Produce", pagevisibilityTestKafkaKey, fmt.Sprintf(pagevisibilityTestKafkaVal, true)).Return(err)
-
-		worker := Worker(repo, store, producer)
-		assert.Equal(err, worker(ctx, payload))
-	})
-
-	t.Run("worker not visible success", func(t *testing.T) {
-		data := data
-		data.Visible = false
-		payload, err := json.Marshal(data)
-		assert.NoError(err)
-
-		repo := new(repoMock)
-		repo.On("Find", models.Page{}).Return(nil)
-
-		store := new(storageMock)
-		store.On("Delete", page).Return(nil)
+		store.On("Get", path).Return(string(pData), nil)
+		errDelete := errors.New("cant delete the page")
+		store.On("Delete", path).Return(errDelete)
 
 		producer := new(producerMock)
-		producer.On("Produce", pagevisibilityTestKafkaKey, fmt.Sprintf(pagevisibilityTestKafkaVal, false)).Return(nil)
+		producer.msgs = make(chan *kafka.Message, 1)
 
-		worker := Worker(repo, store, producer)
-		assert.NoError(worker(ctx, payload))
+		assert.Equal(errDelete, Worker(new(repoMock), store, producer)(ctx, qData))
+		msg := <-producer.ProduceChannel()
+
+		expectMsg, err := json.Marshal(page)
+		assert.NoError(err)
+		assert.Equal(string(expectMsg), string(msg.Value))
+		assert.Equal(pagevisibilityTestKey, string(msg.Key))
 	})
 
-	t.Run("worker not visible error", func(t *testing.T) {
-		data := data
-		data.Visible = false
-		payload, err := json.Marshal(data)
+	t.Run("worker db success", func(t *testing.T) {
+		page := newPage()
+		page.ArticleBody = nil
+		page.MainEntity = nil
+		page.Visibility = &schema.Visibility{
+			Text:    true,
+			Comment: true,
+			User:    true,
+		}
+		qData, err := json.Marshal(newData(page.Visibility.Text, page.Visibility.Comment, page.Visibility.User))
 		assert.NoError(err)
 
-		repo := new(repoMock)
-		repo.On("Find", models.Page{}).Return(nil)
-
-		err = errors.New("can't delete the page")
 		store := new(storageMock)
-		store.On("Delete", page).Return(err)
-
-		worker := Worker(repo, store, new(producerMock))
-		assert.Equal(err, worker(ctx, payload))
-	})
-
-	t.Run("worker not visible producer error", func(t *testing.T) {
-		data := data
-		data.Visible = false
-		payload, err := json.Marshal(data)
-		assert.NoError(err)
+		store.On("Get", path).Return(string(""), errors.New("can't find the page"))
 
 		repo := new(repoMock)
-		repo.On("Find", models.Page{}).Return(nil)
+		repo.On("Find", new(models.Project)).Return(nil)
+		repo.On("Find", new(models.Namespace)).Return(nil)
 
-		store := new(storageMock)
-		store.On("Delete", page).Return(err)
-
-		err = errors.New("cluster is offline")
 		producer := new(producerMock)
-		producer.On("Produce", pagevisibilityTestKafkaKey, fmt.Sprintf(pagevisibilityTestKafkaVal, false)).Return(err)
+		producer.msgs = make(chan *kafka.Message, 1)
 
-		worker := Worker(repo, store, producer)
-		assert.Equal(err, worker(ctx, payload))
-	})
+		assert.NoError(Worker(repo, store, producer)(ctx, qData))
+		msg := <-producer.ProduceChannel()
 
-	t.Run("worker find error", func(t *testing.T) {
-		payload, err := json.Marshal(data)
+		expectMsg, err := json.Marshal(page)
 		assert.NoError(err)
 
-		err = errors.New("page not found")
-		repo := new(repoMock)
-		repo.On("Find", models.Page{}).Return(err)
+		assert.Equal(string(expectMsg), string(msg.Value))
+		assert.Equal(pagevisibilityTestKey, string(msg.Key))
+	})
 
-		worker := Worker(repo, new(storageMock), new(producerMock))
-		assert.Equal(err, worker(ctx, payload))
+	t.Run("wikinews license", func(t *testing.T) {
+		pagevisibilityTestDbName = "arwikinews"
+		pagevisibilityTestSiteName = "ويكي_الأخبار"
+		pagevisibilityTestSiteURL = "https://ar.wikinews.org"
+		pagevisibilityTestSiteCode = "wikinews"
+		pagevisibilityTestKey = `{"name":"Earth","is_part_of":"arwikinews"}`
+
+		path = fmt.Sprintf("%s/%s.json", pagevisibilityTestDbName, pagevisibilityTestTitle)
+
+		page := newPage()
+		page.ArticleBody = nil
+		page.MainEntity = nil
+		page.Visibility = &schema.Visibility{
+			Text:    true,
+			Comment: true,
+			User:    true,
+		}
+		page.License = []*schema.License{
+			{
+				Name:       "Attribution 2.5 Generic",
+				Identifier: "CC BY 2.5",
+				URL:        "https://creativecommons.org/licenses/by/2.5/",
+			},
+		}
+
+		qData, err := json.Marshal(newData(page.Visibility.Text, page.Visibility.Comment, page.Visibility.User))
+		assert.NoError(err)
+
+		store := new(storageMock)
+		store.On("Get", path).Return(string(""), errors.New("can't find the page"))
+
+		repo := new(repoMock)
+		model := new(models.Project)
+		repo.On("Find", model).Return(nil)
+		repo.On("Find", new(models.Namespace)).Return(nil)
+
+		producer := new(producerMock)
+		producer.msgs = make(chan *kafka.Message, 1)
+
+		assert.NoError(Worker(repo, store, producer)(ctx, qData))
+		msg := <-producer.ProduceChannel()
+
+		expectMsg, err := json.Marshal(page)
+		assert.NoError(err)
+
+		assert.Equal(string(expectMsg), string(msg.Value))
+		assert.Equal(pagevisibilityTestKey, string(msg.Key))
+	})
+
+	t.Run("worker db project error", func(t *testing.T) {
+		page := newPage()
+		page.ArticleBody = nil
+		page.MainEntity = nil
+		page.Visibility = &schema.Visibility{
+			Text:    true,
+			Comment: true,
+			User:    true,
+		}
+		qData, err := json.Marshal(newData(page.Visibility.Text, page.Visibility.Comment, page.Visibility.User))
+		assert.NoError(err)
+
+		store := new(storageMock)
+		store.On("Get", path).Return(string(""), errors.New("can't find the page"))
+
+		repo := new(repoMock)
+		errRepo := errors.New("project not found")
+		repo.On("Find", new(models.Project)).Return(errRepo)
+
+		producer := new(producerMock)
+		producer.msgs = make(chan *kafka.Message, 1)
+
+		assert.Equal(errRepo, Worker(repo, store, producer)(ctx, qData))
+	})
+
+	t.Run("worker db namespace error", func(t *testing.T) {
+		page := newPage()
+		page.ArticleBody = nil
+		page.MainEntity = nil
+		page.Visibility = &schema.Visibility{
+			Text:    true,
+			Comment: true,
+			User:    true,
+		}
+		qData, err := json.Marshal(newData(page.Visibility.Text, page.Visibility.Comment, page.Visibility.User))
+		assert.NoError(err)
+
+		store := new(storageMock)
+		store.On("Get", path).Return(string(""), errors.New("can't find the page"))
+
+		repo := new(repoMock)
+		errRepo := errors.New("namespace not found")
+		repo.On("Find", new(models.Project)).Return(nil)
+		repo.On("Find", new(models.Namespace)).Return(errRepo)
+
+		producer := new(producerMock)
+		producer.msgs = make(chan *kafka.Message, 1)
+
+		assert.Equal(errRepo, Worker(repo, store, producer)(ctx, qData))
 	})
 }

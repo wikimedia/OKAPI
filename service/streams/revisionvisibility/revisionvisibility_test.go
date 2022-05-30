@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"okapi-data-service/queues/pagevisibility"
+	"okapi-data-service/schema/v3"
 	"testing"
 	"time"
 
@@ -23,9 +24,20 @@ const revisionvisibilityTestName = "stream/revisionvisibility"
 const revisionvisibilityTestTitle = "ninja"
 const revisionvisibilityTestDbName = "ninjas"
 const revisionvisibilityTestRev = 1
-const revisionvisibilitySiteURL = "en.wikipedia.org"
-const revisionvisibilityLang = "en"
-const revisionvisibilityVisible = true
+const revisionvisibilityTestSiteURL = "en.wikipedia.org"
+const revisionvisibilityTestLang = "en"
+const revisionvisibilityTestTextVisible = true
+const revisionvisibilityTestCommentVisible = true
+const revisionvisibilityTestUserVisible = true
+const revisionvisibilityTestPageID = 100
+const revisionvisibilityTestUserID = 10
+const revisionvisibilityTestUserText = "unknown"
+const revisionvisibilityTestUserEditCount = 100
+const revisionvisibilityTestUserIsBot = false
+
+var revisionvisibilityTestUserRegistrationDt = time.Now()
+var revisionvisibilityTestUserGroups = []string{"bot", "admin"}
+var revisionvisibilityRevDt = time.Now()
 
 type revisionvisibilityRedisMock struct {
 	mock.Mock
@@ -53,21 +65,44 @@ func TestRevisionvisibility(t *testing.T) {
 
 	date := time.Now().Add(24 * time.Hour)
 	evt := new(eventstream.RevisionVisibilityChange)
+	evt.Data.PageID = revisionvisibilityTestPageID
 	evt.Data.PageTitle = revisionvisibilityTestTitle
 	evt.Data.Database = revisionvisibilityTestDbName
 	evt.Data.RevID = revisionvisibilityTestRev
 	evt.Data.Meta.Dt = date
-	evt.Data.Meta.Domain = revisionvisibilitySiteURL
-	evt.Data.Visibility.Text = revisionvisibilityVisible
+	evt.Data.Meta.Domain = revisionvisibilityTestSiteURL
+	evt.Data.Visibility.Text = revisionvisibilityTestTextVisible
+	evt.Data.Visibility.Comment = revisionvisibilityTestCommentVisible
+	evt.Data.Visibility.User = revisionvisibilityTestUserVisible
+	evt.Data.RevTimestamp = revisionvisibilityRevDt
+	evt.Data.Performer.UserID = revisionvisibilityTestUserID
+	evt.Data.Performer.UserText = revisionvisibilityTestUserText
+	evt.Data.Performer.UserEditCount = revisionvisibilityTestUserEditCount
+	evt.Data.Performer.UserGroups = revisionvisibilityTestUserGroups
+	evt.Data.Performer.UserIsBot = revisionvisibilityTestUserIsBot
+	evt.Data.Performer.UserRegistrationDt = revisionvisibilityTestUserRegistrationDt
 
-	data, err := json.Marshal(&pagevisibility.Data{
-		Title:    revisionvisibilityTestTitle,
-		Revision: revisionvisibilityTestRev,
-		DbName:   revisionvisibilityTestDbName,
-		Lang:     revisionvisibilityLang,
-		Visible:  revisionvisibilityVisible,
-		SiteURL:  fmt.Sprintf("https://%s", revisionvisibilitySiteURL),
-	})
+	qData := new(pagevisibility.Data)
+	qData.ID = revisionvisibilityTestPageID
+	qData.Title = revisionvisibilityTestTitle
+	qData.Revision = revisionvisibilityTestRev
+	qData.DbName = revisionvisibilityTestDbName
+	qData.RevisionDt = revisionvisibilityRevDt
+	qData.Lang = revisionvisibilityTestLang
+	qData.SiteURL = fmt.Sprintf("https://%s", revisionvisibilityTestSiteURL)
+	qData.Visible = revisionvisibilityTestTextVisible
+	qData.Visibility.Text = revisionvisibilityTestTextVisible
+	qData.Visibility.Comment = revisionvisibilityTestCommentVisible
+	qData.Visibility.User = revisionvisibilityTestUserVisible
+	qData.Editor = &schema.Editor{
+		Identifier:  revisionvisibilityTestUserID,
+		Name:        revisionvisibilityTestUserText,
+		EditCount:   revisionvisibilityTestUserEditCount,
+		Groups:      revisionvisibilityTestUserGroups,
+		IsBot:       revisionvisibilityTestUserIsBot,
+		DateStarted: &revisionvisibilityTestUserRegistrationDt,
+	}
+	data, err := json.Marshal(qData)
 	assert.NoError(err)
 
 	t.Run("revisionvisibility success", func(t *testing.T) {

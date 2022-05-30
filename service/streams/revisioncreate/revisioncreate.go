@@ -3,7 +3,8 @@ package revisioncreate
 import (
 	"context"
 	"log"
-	"okapi-data-service/queues/pagepull"
+	"okapi-data-service/queues/pagefetch"
+	"okapi-data-service/schema/v3"
 	"okapi-data-service/streams/utils"
 	"time"
 
@@ -21,11 +22,26 @@ func Handler(ctx context.Context, store redis.Cmdable, expire time.Duration) fun
 		var err error
 
 		if !evt.Data.PageIsRedirect && !ores.ModelDamaging.Supports(evt.Data.Database) && !utils.Exclude(evt.Data.Database) && utils.FilterNs(evt.Data.PageNamespace) {
-			err = pagepull.Enqueue(ctx, store, &pagepull.Data{
-				Title:   evt.Data.PageTitle,
-				DbName:  evt.Data.Database,
-				Lang:    utils.Lang(evt.Data.Meta.Domain),
-				SiteURL: utils.SiteURL(evt.Data.Meta.Domain),
+			editor := &schema.Editor{
+				Identifier: evt.Data.Performer.UserID,
+				Name:       evt.Data.Performer.UserText,
+				EditCount:  evt.Data.Performer.UserEditCount,
+				Groups:     evt.Data.Performer.UserGroups,
+				IsBot:      evt.Data.Performer.UserIsBot,
+			}
+
+			if !evt.Data.Performer.UserRegistrationDt.IsZero() {
+				editor.DateStarted = &evt.Data.Performer.UserRegistrationDt
+			}
+
+			err = pagefetch.Enqueue(ctx, store, &pagefetch.Data{
+				Title:     evt.Data.PageTitle,
+				DbName:    evt.Data.Database,
+				Lang:      utils.Lang(evt.Data.Meta.Domain),
+				SiteURL:   utils.SiteURL(evt.Data.Meta.Domain),
+				Revision:  evt.Data.RevID,
+				Namespace: evt.Data.PageNamespace,
+				Editor:    editor,
 			})
 		}
 

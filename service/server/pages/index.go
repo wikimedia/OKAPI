@@ -9,6 +9,7 @@ import (
 	pb "okapi-data-service/server/pages/protos"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
@@ -57,6 +58,7 @@ func Index(ctx context.Context, req *pb.IndexRequest, elastic *elasticsearch.Cli
 			body, err := json.Marshal(index.DocPage{
 				ID:            page.ID,
 				Title:         page.Title,
+				Name:          strings.Replace(page.Title, "_", " ", -1),
 				NsID:          page.NsID,
 				DbName:        page.DbName,
 				Lang:          page.Lang,

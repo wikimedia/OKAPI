@@ -22,6 +22,7 @@ type PageBody struct {
 // Page content representation
 type Page struct {
 	Title        string    `json:"title"`
+	Namespace    int       `json:"namespace,omitempty"`
 	PID          int       `json:"pid"`
 	QID          string    `json:"qid,omitempty"`
 	Revision     int       `json:"revision"`
