@@ -11,7 +11,7 @@ import (
 // copyNumWorkers is the default number of workers for concurrency.
 const copyNumWorkers = 10
 
-// Copy copies project dump and metadata, as well as global exports metadata for freemium consumption.
+// Copy copies project dump and metadata, as well as global exports metadata.
 // e.g., export/enwiki/enwiki_14.json -> export/enwiki/enwiki_monthly_14.json
 // export/enwiki/enwiki_json_0.tar.gz -> export/enwiki/enwiki_monthly_json_0.tar.gz
 // public/exports_0.json -> public/exports_monthly_0.json

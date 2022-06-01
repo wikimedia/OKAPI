@@ -1,0 +1,847 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Wikimedia Enterprise API",
+        "contact": {},
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/v1/diffs/download/{date}/{namespace}/{project}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Hourly updated bundle of revised pages starting at 00:00 UTC each day.",
+                "tags": [
+                    "diffs"
+                ],
+                "summary": "Returns tar.gz file with a specified date’s project revisions in JSON for specified namespace",
+                "operationId": "v1-diffs-json-ns",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Date of the diff in YYYY-MM-DD",
+                        "name": "date",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project identifier",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Pages namespace (currently supported 0, 6, 14)",
+                        "name": "namespace",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "307": {
+                        "description": "Redirects to the direct download URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/diffs/json/{date}/{project}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Hourly updated bundle of revised pages starting at 00:00 UTC each day.",
+                "tags": [
+                    "diffs"
+                ],
+                "summary": "Returns tar.gz file with a specified date’s project revisions for JSON for namespace 0",
+                "operationId": "v1-diffs-json",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Date of the diff in YYYY-MM-DD",
+                        "name": "date",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project identifier",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "307": {
+                        "description": "Redirects to the direct download URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/diffs/meta/{date}/{namespace}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Includes identifiers, file sizes and other relevant metadata.",
+                "tags": [
+                    "diffs"
+                ],
+                "summary": "Returns list of all available day diffs for namespace",
+                "operationId": "v1-diffs-list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "A datetime of diff (YYYY-MM-DD)",
+                        "name": "date",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Pages namespace (currently supported 0, 6, 14)",
+                        "name": "namespace",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/schema.Project"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/diffs/meta/{date}/{namespace}/{project}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Includes identifiers, file sizes and other relevant metadata.",
+                "tags": [
+                    "diffs"
+                ],
+                "summary": "Returns a day diff metadata for namespace",
+                "operationId": "v1-diffs-detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "A datetime of diff (YYYY-MM-DD)",
+                        "name": "date",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Pages namespace (currently supported 0, 6, 14)",
+                        "name": "namespace",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project identifier",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schema.Project"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/exports/download/{namespace}/{project}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Full project export of current revisions updated daily at 12:00 UTC. The archive contains JSON files for each article including revision Wikitext, HTML, and relevant metadata.",
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Returns today’s tar.gz file with JSON export of entire project corpus in specified namespace",
+                "operationId": "v1-exports-download-ns",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "Pages namespace (currently supported 0, 6, 14)",
+                        "name": "namespace",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project identifier",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "307": {
+                        "description": "Redirects to the direct download URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/exports/json/{project}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Full project export of current revisions updated daily at 12:00 UTC. The archive contains JSON files for each article including revision Wikitext, HTML, and relevant metadata.",
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Returns today’s tar.gz file with JSON export of entire project corpus in namespace 0",
+                "operationId": "v1-exports-json",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project identifier",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "307": {
+                        "description": "Redirects to the direct download URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/exports/meta/{namespace}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Includes identifiers, file sizes and other relevant metadata.",
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Returns list of all available exports for namespace",
+                "operationId": "v1-exports-list",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "Pages namespace (currently supported 0, 6, 14)",
+                        "name": "namespace",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/schema.Project"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/exports/meta/{namespace}/{project}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Includes identifiers, file sizes and other relevant metadata.",
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Returns export metadata for namespace",
+                "operationId": "v1-exports-detail",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "Pages namespace (currently supported 0, 6, 14)",
+                        "name": "namespace",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project identifier",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schema.Project"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/namespaces": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Includes name and identifier.",
+                "tags": [
+                    "namespaces"
+                ],
+                "summary": "Returns list of available namespaces",
+                "operationId": "v1-namespace-list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/schema.Namespace"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/pages/meta/{project}/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Most current revision of a page.",
+                "tags": [
+                    "pages"
+                ],
+                "summary": "Returns JSON structure of page",
+                "operationId": "v1-page-data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project identifier",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schema.Page"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/projects": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Includes project identifier, file sizes, and other relevant metadata.",
+                "tags": [
+                    "projects"
+                ],
+                "summary": "Returns list of all downloadable Wikimedia projects",
+                "operationId": "v1-projects-list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/schema.Project"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "httperr.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ores.ScoreDamaging": {
+            "type": "object",
+            "properties": {
+                "prediction": {
+                    "type": "boolean"
+                },
+                "probability": {
+                    "type": "object",
+                    "properties": {
+                        "false": {
+                            "type": "number"
+                        },
+                        "true": {
+                            "type": "number"
+                        }
+                    }
+                }
+            }
+        },
+        "ores.ScoreGoodFaith": {
+            "type": "object",
+            "properties": {
+                "prediction": {
+                    "type": "boolean"
+                },
+                "probability": {
+                    "type": "object",
+                    "properties": {
+                        "false": {
+                            "type": "number"
+                        },
+                        "true": {
+                            "type": "number"
+                        }
+                    }
+                }
+            }
+        },
+        "schema.ArticleBody": {
+            "type": "object",
+            "properties": {
+                "html": {
+                    "type": "string"
+                },
+                "wikitext": {
+                    "type": "string"
+                }
+            }
+        },
+        "schema.Editor": {
+            "type": "object",
+            "properties": {
+                "date_started": {
+                    "type": "string"
+                },
+                "edit_count": {
+                    "type": "integer"
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "identifier": {
+                    "type": "integer"
+                },
+                "is_anonymous": {
+                    "type": "boolean"
+                },
+                "is_bot": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "schema.Entity": {
+            "type": "object",
+            "properties": {
+                "aspects": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "schema.Language": {
+            "type": "object",
+            "properties": {
+                "identifier": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "schema.License": {
+            "type": "object",
+            "properties": {
+                "identifier": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "schema.Namespace": {
+            "type": "object",
+            "properties": {
+                "identifier": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "schema.Page": {
+            "type": "object",
+            "properties": {
+                "additional_entities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.Entity"
+                    }
+                },
+                "article_body": {
+                    "$ref": "#/definitions/schema.ArticleBody"
+                },
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.Page"
+                    }
+                },
+                "date_modified": {
+                    "type": "string"
+                },
+                "identifier": {
+                    "type": "integer"
+                },
+                "in_language": {
+                    "$ref": "#/definitions/schema.Language"
+                },
+                "is_part_of": {
+                    "$ref": "#/definitions/schema.Project"
+                },
+                "license": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.License"
+                    }
+                },
+                "main_entity": {
+                    "$ref": "#/definitions/schema.Entity"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "namespace": {
+                    "$ref": "#/definitions/schema.Namespace"
+                },
+                "protection": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.Protection"
+                    }
+                },
+                "redirects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.Page"
+                    }
+                },
+                "templates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.Page"
+                    }
+                },
+                "url": {
+                    "type": "string"
+                },
+                "version": {
+                    "$ref": "#/definitions/schema.Version"
+                },
+                "visibility": {
+                    "$ref": "#/definitions/schema.Visibility"
+                }
+            }
+        },
+        "schema.Project": {
+            "type": "object",
+            "properties": {
+                "date_modified": {
+                    "type": "string"
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "in_language": {
+                    "$ref": "#/definitions/schema.Language"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "$ref": "#/definitions/schema.Size"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "schema.Protection": {
+            "type": "object",
+            "properties": {
+                "expiry": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "schema.Scores": {
+            "type": "object",
+            "properties": {
+                "damaging": {
+                    "$ref": "#/definitions/ores.ScoreDamaging"
+                },
+                "goodfaith": {
+                    "$ref": "#/definitions/ores.ScoreGoodFaith"
+                }
+            }
+        },
+        "schema.Size": {
+            "type": "object",
+            "properties": {
+                "unit_text": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "schema.Version": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "editor": {
+                    "$ref": "#/definitions/schema.Editor"
+                },
+                "identifier": {
+                    "type": "integer"
+                },
+                "is_flagged_stable": {
+                    "type": "boolean"
+                },
+                "is_minor_edit": {
+                    "type": "boolean"
+                },
+                "scores": {
+                    "$ref": "#/definitions/schema.Scores"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "schema.Visibility": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "boolean"
+                },
+                "text": {
+                    "type": "boolean"
+                },
+                "user": {
+                    "type": "boolean"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

@@ -1,0 +1,6 @@
+[submodule "protos"]
+	path = protos
+	url = ../grpc/protos.git
+[submodule "schema"]
+	path = schema
+	url = ../schema.git

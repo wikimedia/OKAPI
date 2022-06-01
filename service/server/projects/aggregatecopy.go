@@ -10,7 +10,7 @@ import (
 	"github.com/protsack-stephan/dev-toolkit/pkg/storage"
 )
 
-// AggregateCopy generate list of projects for API to serve for free tier users
+// AggregateCopy generate list of projects for API to serve
 func AggregateCopy(ctx context.Context, req *pb.AggregateCopyRequest, store storage.CopierWithContext, suffix string) (*pb.AggregateCopyResponse, error) {
 	res := new(pb.AggregateCopyResponse)
 	res.Total = int32(len(namespaces))

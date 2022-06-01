@@ -1,0 +1,557 @@
+definitions:
+  httperr.Error:
+    properties:
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  ores.ScoreDamaging:
+    properties:
+      prediction:
+        type: boolean
+      probability:
+        properties:
+          "false":
+            type: number
+          "true":
+            type: number
+        type: object
+    type: object
+  ores.ScoreGoodFaith:
+    properties:
+      prediction:
+        type: boolean
+      probability:
+        properties:
+          "false":
+            type: number
+          "true":
+            type: number
+        type: object
+    type: object
+  schema.ArticleBody:
+    properties:
+      html:
+        type: string
+      wikitext:
+        type: string
+    type: object
+  schema.Editor:
+    properties:
+      date_started:
+        type: string
+      edit_count:
+        type: integer
+      groups:
+        items:
+          type: string
+        type: array
+      identifier:
+        type: integer
+      is_anonymous:
+        type: boolean
+      is_bot:
+        type: boolean
+      name:
+        type: string
+    type: object
+  schema.Entity:
+    properties:
+      aspects:
+        items:
+          type: string
+        type: array
+      identifier:
+        type: string
+      url:
+        type: string
+    type: object
+  schema.Language:
+    properties:
+      identifier:
+        type: string
+      name:
+        type: string
+    type: object
+  schema.License:
+    properties:
+      identifier:
+        type: string
+      name:
+        type: string
+      url:
+        type: string
+    type: object
+  schema.Namespace:
+    properties:
+      identifier:
+        type: integer
+      name:
+        type: string
+    type: object
+  schema.Page:
+    properties:
+      additional_entities:
+        items:
+          $ref: '#/definitions/schema.Entity'
+        type: array
+      article_body:
+        $ref: '#/definitions/schema.ArticleBody'
+      categories:
+        items:
+          $ref: '#/definitions/schema.Page'
+        type: array
+      date_modified:
+        type: string
+      identifier:
+        type: integer
+      in_language:
+        $ref: '#/definitions/schema.Language'
+      is_part_of:
+        $ref: '#/definitions/schema.Project'
+      license:
+        items:
+          $ref: '#/definitions/schema.License'
+        type: array
+      main_entity:
+        $ref: '#/definitions/schema.Entity'
+      name:
+        type: string
+      namespace:
+        $ref: '#/definitions/schema.Namespace'
+      protection:
+        items:
+          $ref: '#/definitions/schema.Protection'
+        type: array
+      redirects:
+        items:
+          $ref: '#/definitions/schema.Page'
+        type: array
+      templates:
+        items:
+          $ref: '#/definitions/schema.Page'
+        type: array
+      url:
+        type: string
+      version:
+        $ref: '#/definitions/schema.Version'
+      visibility:
+        $ref: '#/definitions/schema.Visibility'
+    type: object
+  schema.Project:
+    properties:
+      date_modified:
+        type: string
+      identifier:
+        type: string
+      in_language:
+        $ref: '#/definitions/schema.Language'
+      name:
+        type: string
+      size:
+        $ref: '#/definitions/schema.Size'
+      url:
+        type: string
+      version:
+        type: string
+    type: object
+  schema.Protection:
+    properties:
+      expiry:
+        type: string
+      level:
+        type: string
+      type:
+        type: string
+    type: object
+  schema.Scores:
+    properties:
+      damaging:
+        $ref: '#/definitions/ores.ScoreDamaging'
+      goodfaith:
+        $ref: '#/definitions/ores.ScoreGoodFaith'
+    type: object
+  schema.Size:
+    properties:
+      unit_text:
+        type: string
+      value:
+        type: number
+    type: object
+  schema.Version:
+    properties:
+      comment:
+        type: string
+      editor:
+        $ref: '#/definitions/schema.Editor'
+      identifier:
+        type: integer
+      is_flagged_stable:
+        type: boolean
+      is_minor_edit:
+        type: boolean
+      scores:
+        $ref: '#/definitions/schema.Scores'
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  schema.Visibility:
+    properties:
+      comment:
+        type: boolean
+      text:
+        type: boolean
+      user:
+        type: boolean
+    type: object
+info:
+  contact: {}
+  title: Wikimedia Enterprise API
+  version: 1.0.0
+paths:
+  /v1/diffs/download/{date}/{namespace}/{project}:
+    get:
+      description: Hourly updated bundle of revised pages starting at 00:00 UTC each
+        day.
+      operationId: v1-diffs-json-ns
+      parameters:
+      - description: Date of the diff in YYYY-MM-DD
+        in: path
+        name: date
+        required: true
+        type: string
+      - description: Project identifier
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Pages namespace (currently supported 0, 6, 14)
+        in: path
+        name: namespace
+        required: true
+        type: number
+      responses:
+        "307":
+          description: Redirects to the direct download URL
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns tar.gz file with a specified date’s project revisions in JSON
+        for specified namespace
+      tags:
+      - diffs
+  /v1/diffs/json/{date}/{project}:
+    get:
+      deprecated: true
+      description: Hourly updated bundle of revised pages starting at 00:00 UTC each
+        day.
+      operationId: v1-diffs-json
+      parameters:
+      - description: Date of the diff in YYYY-MM-DD
+        in: path
+        name: date
+        required: true
+        type: string
+      - description: Project identifier
+        in: path
+        name: project
+        required: true
+        type: string
+      responses:
+        "307":
+          description: Redirects to the direct download URL
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns tar.gz file with a specified date’s project revisions for JSON
+        for namespace 0
+      tags:
+      - diffs
+  /v1/diffs/meta/{date}/{namespace}:
+    get:
+      description: Includes identifiers, file sizes and other relevant metadata.
+      operationId: v1-diffs-list
+      parameters:
+      - description: A datetime of diff (YYYY-MM-DD)
+        in: path
+        name: date
+        required: true
+        type: string
+      - description: Pages namespace (currently supported 0, 6, 14)
+        in: path
+        name: namespace
+        required: true
+        type: number
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/schema.Project'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns list of all available day diffs for namespace
+      tags:
+      - diffs
+  /v1/diffs/meta/{date}/{namespace}/{project}:
+    get:
+      description: Includes identifiers, file sizes and other relevant metadata.
+      operationId: v1-diffs-detail
+      parameters:
+      - description: A datetime of diff (YYYY-MM-DD)
+        in: path
+        name: date
+        required: true
+        type: string
+      - description: Pages namespace (currently supported 0, 6, 14)
+        in: path
+        name: namespace
+        required: true
+        type: number
+      - description: Project identifier
+        in: path
+        name: project
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.Project'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns a day diff metadata for namespace
+      tags:
+      - diffs
+  /v1/exports/download/{namespace}/{project}:
+    get:
+      description: Full project export of current revisions updated daily at 12:00
+        UTC. The archive contains JSON files for each article including revision Wikitext,
+        HTML, and relevant metadata.
+      operationId: v1-exports-download-ns
+      parameters:
+      - description: Pages namespace (currently supported 0, 6, 14)
+        in: path
+        name: namespace
+        required: true
+        type: number
+      - description: Project identifier
+        in: path
+        name: project
+        required: true
+        type: string
+      responses:
+        "307":
+          description: Redirects to the direct download URL
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns today’s tar.gz file with JSON export of entire project corpus
+        in specified namespace
+      tags:
+      - exports
+  /v1/exports/json/{project}:
+    get:
+      deprecated: true
+      description: Full project export of current revisions updated daily at 12:00
+        UTC. The archive contains JSON files for each article including revision Wikitext,
+        HTML, and relevant metadata.
+      operationId: v1-exports-json
+      parameters:
+      - description: Project identifier
+        in: path
+        name: project
+        required: true
+        type: string
+      responses:
+        "307":
+          description: Redirects to the direct download URL
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns today’s tar.gz file with JSON export of entire project corpus
+        in namespace 0
+      tags:
+      - exports
+  /v1/exports/meta/{namespace}:
+    get:
+      description: Includes identifiers, file sizes and other relevant metadata.
+      operationId: v1-exports-list
+      parameters:
+      - description: Pages namespace (currently supported 0, 6, 14)
+        in: path
+        name: namespace
+        required: true
+        type: number
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/schema.Project'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns list of all available exports for namespace
+      tags:
+      - exports
+  /v1/exports/meta/{namespace}/{project}:
+    get:
+      description: Includes identifiers, file sizes and other relevant metadata.
+      operationId: v1-exports-detail
+      parameters:
+      - description: Pages namespace (currently supported 0, 6, 14)
+        in: path
+        name: namespace
+        required: true
+        type: number
+      - description: Project identifier
+        in: path
+        name: project
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.Project'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns export metadata for namespace
+      tags:
+      - exports
+  /v1/namespaces:
+    get:
+      description: Includes name and identifier.
+      operationId: v1-namespace-list
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/schema.Namespace'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns list of available namespaces
+      tags:
+      - namespaces
+  /v1/pages/meta/{project}/{name}:
+    get:
+      description: Most current revision of a page.
+      operationId: v1-page-data
+      parameters:
+      - description: Project identifier
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Page name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.Page'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns JSON structure of page
+      tags:
+      - pages
+  /v1/projects:
+    get:
+      description: Includes project identifier, file sizes, and other relevant metadata.
+      operationId: v1-projects-list
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/schema.Project'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns list of all downloadable Wikimedia projects
+      tags:
+      - projects
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  app:
+    build: ./
+    ports:
+      - 4040:4040
+    env_file:
+      - ./.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  cache:
+    image: redis:latest
+    env_file:
+      - ./.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"

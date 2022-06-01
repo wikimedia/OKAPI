@@ -1,0 +1,115 @@
+definitions:
+  httperr.Error:
+    properties:
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+info:
+  contact: {}
+  title: Wikimedia Enterprise Realtime API
+  version: 1.0.0
+paths:
+  /v1/page-delete:
+    get:
+      description: Returns stream of page delete events
+      operationId: v1-page-delete
+      parameters:
+      - description: Offset
+        in: query
+        name: offset
+        type: number
+      - description: Since Date (in RFC3339 '2006-01-02T15:04:05Z07:00' or as a timestamp
+          in milliseconds)
+        in: query
+        name: since
+        type: string
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get page delete events
+      tags:
+      - pages
+  /v1/page-update:
+    get:
+      description: Returns stream of page structured data
+      operationId: v1-page-update
+      parameters:
+      - description: Offset
+        in: query
+        name: offset
+        type: number
+      - description: Since Date (in RFC3339 '2006-01-02T15:04:05Z07:00' or as a timestamp
+          in milliseconds)
+        in: query
+        name: since
+        type: string
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get page update events
+      tags:
+      - pages
+  /v1/page-visibility:
+    get:
+      description: Returns stream of page visibility change events
+      operationId: v1-page-visibility
+      parameters:
+      - description: Offset
+        in: query
+        name: offset
+        type: number
+      - description: Since Date (in RFC3339 '2006-01-02T15:04:05Z07:00' or as a timestamp
+          in milliseconds)
+        in: query
+        name: since
+        type: string
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get page visibility change events
+      tags:
+      - pages
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

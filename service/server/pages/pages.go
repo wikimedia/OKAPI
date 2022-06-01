@@ -88,7 +88,7 @@ func (srv *Server) Export(ctx context.Context, req *pb.ExportRequest) (*pb.Expor
 	return res, err
 }
 
-// Copy copies project dump and metadata, as well as global exports metadata for freemium consumption.
+// Copy copies project dump and metadata, as well as global exports metadata.
 // It takes a list of db/projects and a namespace as request arguments, and copies all the dump, metadata related to this namespace and project list.
 func (srv *Server) Copy(ctx context.Context, req *pb.CopyRequest) (*pb.CopyResponse, error) {
 	var res *pb.CopyResponse

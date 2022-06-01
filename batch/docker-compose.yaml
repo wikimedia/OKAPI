@@ -1,0 +1,41 @@
+version: "3.8"
+
+services: 
+  minio:
+    image: minio/minio:latest
+    ports:
+      - 9000:9000
+      - 9202:9202
+    volumes:
+      - ./.storage:/data
+    env_file:
+      - ./.env
+    command: server /data --console-address :9202
+
+  server:
+    build: 
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - 50052:50052
+    env_file: 
+      - ./.env
+    volumes:
+      - ./.vol:/root/.vol
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  listener:
+    build: 
+      context: .
+      dockerfile: listener/Dockerfile
+    env_file: 
+      - ./.env
+    volumes:
+      - ./.vol:/root/.vol
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"

@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - 8080:3000
+    env_file: 
+      - ./.env
+    depends_on:
+      - cache
+      - minio
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  cache:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    env_file: 
+      - ./.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  minio:
+    image: minio/minio:latest
+    ports:
+      - 9000:9000
+      - 9202:9202
+    volumes:
+      - ./.storage:/data
+    env_file:
+      - ./.env
+    command: server /data --console-address :9202
