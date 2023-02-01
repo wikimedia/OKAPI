@@ -3,7 +3,6 @@ package pages
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"math"
 	"okapi-data-service/models"
@@ -161,7 +160,7 @@ func Fetch(ctx context.Context, req *pb.FetchRequest, repo fetchRepo, mwdump *du
 	for i := 1; i <= batches; i++ {
 		for title, err := range <-errs {
 			if err != nil {
-				log.Println(fmt.Sprintf("title: %s err: %v", title, err))
+				log.Printf("title: %s err: %v", title, err)
 				res.Errors++
 			} else {
 				res.Redirects--

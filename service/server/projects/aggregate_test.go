@@ -43,6 +43,7 @@ var aggregateTestProjects = []models.Project{
 		Language: &models.Language{
 			Name:      aggregateTestProjLangName,
 			LocalName: aggregateTestProjLangLocalName,
+			Code:      aggregateTestProjLang,
 		},
 	},
 }
@@ -103,9 +104,10 @@ func TestAggregate(t *testing.T) {
 			},
 			InLanguage: &schema.Language{
 				Name:       proj.Language.LocalName,
-				Identifier: proj.DbName,
+				Identifier: proj.Language.Code,
 			},
 		}
+		fmt.Sprintln(export)
 		exports = append(exports, export)
 
 		body, err := json.Marshal(export)
@@ -130,7 +132,7 @@ func TestAggregate(t *testing.T) {
 			URL:        proj.SiteURL,
 			InLanguage: &schema.Language{
 				Name:       proj.Language.LocalName,
-				Identifier: proj.DbName,
+				Identifier: proj.Language.Code,
 			},
 		})
 	}

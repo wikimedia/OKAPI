@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-const aggregateCopyTestSuffix = "_monthly"
+const aggregateCopyTestSuffix = "_group_1"
 
 type aggregateCopyStorageMock struct {
 	mock.Mock

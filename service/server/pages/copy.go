@@ -11,10 +11,10 @@ import (
 // copyNumWorkers is the default number of workers for concurrency.
 const copyNumWorkers = 10
 
-// Copy copies project dump and metadata, as well as global exports metadata.
-// e.g., export/enwiki/enwiki_14.json -> export/enwiki/enwiki_monthly_14.json
-// export/enwiki/enwiki_json_0.tar.gz -> export/enwiki/enwiki_monthly_json_0.tar.gz
-// public/exports_0.json -> public/exports_monthly_0.json
+// Copy copies project dump and metadata, as well as global exports metadata for group consumption.
+// e.g., export/enwiki/enwiki_14.json -> export/enwiki/enwiki_group_1_14.json
+// export/enwiki/enwiki_json_0.tar.gz -> export/enwiki/enwiki_group_1_json_0.tar.gz
+// public/exports_0.json -> public/exports_group_1_0.json
 func Copy(ctx context.Context, req *pb.CopyRequest, store storage.CopierWithContext, suffix string) (*pb.CopyResponse, error) {
 	if req.Workers == 0 {
 		req.Workers = copyNumWorkers

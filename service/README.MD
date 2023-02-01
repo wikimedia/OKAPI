@@ -2,7 +2,7 @@
 
 This file contains short installation guide for engineers to start working with the system. As this is gRPC server by large you might need client to work with the application, we recommend [BloomRPC](https://github.com/uw-labs/bloomrpc) as fast and easy to use app for development.
 
-## Getting started
+## Getting started:
 1. Create `.env` file in the project root (you need Redis, PostgreSQL, Kafka etc. to start the application, alternatively look at docker spin up section below). Here's an example of the file: 
 
 ```bash
@@ -26,18 +26,18 @@ JSON_VOL=/var/www/app/.vol
 KAFKA_BROKER=kafka:19092
 ```
 
-2. Running migrations:
+3. Running migrations:
 
 ```bash
 go run migrations/*.go migrate
 ```
 
-3. Testing, in order to run test suite yo need to do:
+4. Testing, in order to run test suite yo need to do:
 ```bash
 go test ./... -v
 ```
 
-4. Running the application:
+5. Running the application:
 ```bash
 # Main app (gRPC server)
 go run server/main.go
@@ -53,12 +53,12 @@ go run queues/main.go
 go run streams/main.go
 ```
 
-5. Updating gRPC server. If you need to make changes to `.proto` files don't forget to re-generate static files by running (make sure [protoc compiler](https://grpc.io/docs/protoc-installation/) is installed on you machine):
+5. Updating gRPC server. If you need to make changes to `.proto` files don't forget to push you changes into `/protos` git submodule and re-generate static files by running (make sure [protoc compiler](https://grpc.io/docs/protoc-installation/) is installed on you machine):
 ```bash
 make protos
 ```
 
-## Using docker
+## Using docker: 
 
 1. Make sure `docker` and `docker-compose` is installed on yor machine.
 
@@ -104,7 +104,7 @@ sudo docker-compose up
 sudo docker-compose exec server bash
 ```
 
-## Getting baseline data
+## Getting baseline data:
 
 1. Import proto files from `/protos` directory into the application. Specifically `pages.proto`, `namespaces.proto`, `projects.proto`, `search.proto`.
 
@@ -124,7 +124,7 @@ sudo docker-compose exec server bash
 
     * Run `projects.Aggregate` to generate and export global metadata of projects for each namespace.
 
-4. After exporting dumps and metadata, you are ready to create a `copy` for custom user groups.
+4. After exporting dumps and metadata, you are ready to create a `copy` for custom users.
 
     * Run `pages.Copy` with a list of projects and a namespace (e.g., db_names `["afwikibooks"]` and ns `0`). This will create copies of `afwikibooks` tar and metadata for namespace 0, as well as copy of global exports metadata for namespace 0.
 

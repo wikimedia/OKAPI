@@ -35,7 +35,7 @@ func Aggregate(ctx context.Context, _ *pb.AggregateRequest, repo repository.Find
 		projects := make([]models.Project, 0)
 		err := repo.Find(ctx, &projects, func(q *orm.Query) *orm.Query {
 			return q.
-				ColumnExpr("project.*, language.name as language__name, language.local_name as language__local_name").
+				ColumnExpr("project.*, language.name as language__name, language.local_name as language__local_name, language.code as language__code").
 				Join("left join languages as language").
 				JoinOn("language.code = project.lang").
 				Where("project.id > ? and active = true", pointer).
@@ -80,7 +80,7 @@ func Aggregate(ctx context.Context, _ *pb.AggregateRequest, repo repository.Find
 				URL:        proj.SiteURL,
 				InLanguage: &schema.Language{
 					Name:       proj.Language.LocalName,
-					Identifier: proj.DbName,
+					Identifier: proj.Language.Code,
 				},
 			})
 

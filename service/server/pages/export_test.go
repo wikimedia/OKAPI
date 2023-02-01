@@ -71,6 +71,7 @@ func (r *exportRepoMock) Update(ctx context.Context, model interface{}, modifier
 }
 
 type fileInfoMock struct {
+	storage.FileInfo
 	size int64
 }
 
@@ -84,7 +85,7 @@ type exportToStorageMock struct {
 
 func (s *exportToStorageMock) Stat(path string) (storage.FileInfo, error) {
 	args := s.Called(path)
-	return &fileInfoMock{int64(args.Int(0))}, args.Error(1)
+	return &fileInfoMock{size: int64(args.Int(0))}, args.Error(1)
 }
 
 func (s *exportToStorageMock) Get(path string) (io.ReadCloser, error) {

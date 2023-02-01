@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-const dstFileSuffix = "_monthly"
+const dstFileSuffix = "_group_1"
 const workers = 10
 
 var ErrCopy = errors.New("copy failed")

@@ -2,6 +2,7 @@ package projects
 
 import (
 	"context"
+	"fmt"
 	"okapi-data-service/lib/aws"
 	"okapi-data-service/lib/elastic"
 	"okapi-data-service/lib/env"
@@ -54,7 +55,7 @@ func (srv Server) Aggregate(ctx context.Context, req *pb.AggregateRequest) (*pb.
 }
 
 func (srv Server) AggregateCopy(ctx context.Context, req *pb.AggregateCopyRequest) (*pb.AggregateCopyResponse, error) {
-	return AggregateCopy(ctx, req, srv.remoteStore, "_monthly")
+	return AggregateCopy(ctx, req, srv.remoteStore, fmt.Sprintf("_%s", env.Group))
 }
 
 // Init initialize new project server

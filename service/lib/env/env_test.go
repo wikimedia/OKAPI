@@ -36,6 +36,8 @@ const envTestPagefetchWorkers = 100
 const envTestPagedeleteWorkers = 200
 const envTestPagevisibilityWorkers = 300
 
+const envTestGroup = "group_1"
+
 func TestEnv(t *testing.T) {
 	os.Setenv(awsURL, envTestAWSURL)
 	os.Setenv(awsRegion, envTestAWSRegion)
@@ -63,6 +65,8 @@ func TestEnv(t *testing.T) {
 	os.Setenv(pagedeleteWorkers, strconv.Itoa(envTestPagedeleteWorkers))
 	os.Setenv(pagefetchWorkers, strconv.Itoa(envTestPagefetchWorkers))
 	os.Setenv(pagevisibilityWorkers, strconv.Itoa(envTestPagevisibilityWorkers))
+
+	os.Setenv(group, envTestGroup)
 
 	err := Init()
 	assert := assert.New(t)
@@ -97,4 +101,6 @@ func TestEnv(t *testing.T) {
 	assert.Equal(envTestPagedeleteWorkers, PagedeleteWorkers)
 	assert.Equal(envTestPagefetchWorkers, PagefetchWorkers)
 	assert.Equal(envTestPagevisibilityWorkers, PagevisibilityWorkers)
+
+	assert.Equal(envTestGroup, Group)
 }

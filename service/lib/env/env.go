@@ -77,6 +77,9 @@ var PagefetchWorkers = 30
 // PagevisibilityWorkers number of workers for pagevisibility handler
 var PagevisibilityWorkers = 2
 
+// Group dedicated user group
+var Group string
+
 const awsURL = "AWS_URL"
 const awsRegion = "AWS_REGION"
 const awsBucket = "AWS_BUCKET"
@@ -103,6 +106,8 @@ const pagedeleteWorkers = "PAGE_DELETE_WORKERS"
 const pagefetchWorkers = "PAGE_FETCH_WORKERS"
 const pagevisibilityWorkers = "PAGE_VISIBILITY_WORKERS"
 
+const group = "GROUP"
+
 const errorMessage = "env variable '%s' not found"
 
 var variables = map[*string]string{
@@ -122,6 +127,7 @@ var variables = map[*string]string{
 	&GenVol:          genVol,
 	&JSONVol:         jsonVol,
 	&KafkaBroker:     kafkaBroker,
+	&Group:           group,
 }
 
 var workers = map[*int]string{
