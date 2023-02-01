@@ -2,7 +2,7 @@
 
 This is short installation guide to okapi realtime api.
 
-## Getting started
+## Getting started:
 1. Create `.env` file in the project root. Here's an example of the file:
 
 ```bash
@@ -18,16 +18,16 @@ COGNITO_CLIENT_ID=client_id
 REDIS_ADDR=cache:6379
 ```
 
-2. Testing, in order to run test suite yo need to do:
+3. Testing, in order to run test suite yo need to do:
 ```bash
 go test ./... -v
 ```
 
-3. Running the application:
+4. Running the application:
 ```bash
 go run main.go
 ```
 
-## To update/test RBAC
+## To update/test RBAC:
 
 Use [this](https://github.com/prabhat393/rbac-example) for prototyping. Once you have a working `model.conf` and `policy.csv`, replace the ones in the base folder with your new model/policy. Currently, we are using [RBAC with transitive user roles](https://github.com/casbin/casbin/blob/master/examples/rbac_with_hierarchy_policy.csv).
