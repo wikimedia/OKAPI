@@ -1,6 +1,7 @@
 package projects
 
 import (
+	"fmt"
 	"net/http"
 	"okapi-public-api/lib/aws"
 	"okapi-public-api/lib/env"
@@ -25,8 +26,13 @@ func Init() httpmod.Module {
 		Middleware: []gin.HandlerFunc{},
 		Routes: []httpmod.Route{
 			{
-				Method:  http.MethodGet,
-				Handler: httpmw.Cache(cmdable, expire, List(store)),
+				Method: http.MethodGet,
+				Handler: httpmw.Cache(&httpmw.CacheParams{
+					Cache:       cmdable,
+					Expire:      expire,
+					Handle:      List(store),
+					ContentType: fmt.Sprintf("%s; charset=UTF-8", gin.MIMEJSON),
+				}),
 			},
 		},
 	}

@@ -1,6 +1,7 @@
 package projects
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -37,6 +38,6 @@ func List(storage storage.Getter) gin.HandlerFunc {
 			return
 		}
 
-		c.Data(http.StatusOK, "application/json; charset=utf-8", data)
+		c.Data(http.StatusOK, fmt.Sprintf("%s; charset=UTF-8", gin.MIMEJSON), data)
 	}
 }

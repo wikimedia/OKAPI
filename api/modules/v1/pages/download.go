@@ -48,7 +48,7 @@ func Download(storage storage.Getter, cType contenttype.ContentType) gin.Handler
 				return
 			}
 
-			c.Data(http.StatusOK, "application/json; charset=utf-8", data)
+			c.Data(http.StatusOK, fmt.Sprintf("%s; charset=UTF-8", gin.MIMEJSON), data)
 			return
 		}
 
@@ -61,7 +61,7 @@ func Download(storage storage.Getter, cType contenttype.ContentType) gin.Handler
 
 		switch cType {
 		case contenttype.HTML:
-			c.Data(http.StatusOK, "text/html; charset=UTF-8", []byte(page.ArticleBody.HTML))
+			c.Data(http.StatusOK, fmt.Sprintf("%s; charset=UTF-8", gin.MIMEHTML), []byte(page.ArticleBody.HTML))
 		case contenttype.WText:
 			c.Data(http.StatusOK, "text/wikitext; charset=UTF-8", []byte(page.ArticleBody.Wikitext))
 		}

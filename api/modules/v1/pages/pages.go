@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"fmt"
 	"net/http"
 	"okapi-public-api/lib/aws"
 	"okapi-public-api/lib/env"
@@ -17,18 +18,23 @@ import (
 func Init() httpmod.Module {
 	expire := time.Second * time.Duration(env.PagesExpire)
 	store := s3.NewStorage(aws.Session(), env.AWSBucket)
-	cmd := redis.Client()
+	cmdable := redis.Client()
 
 	return httpmod.Module{
 		Path:       "/v1/pages",
 		Middleware: []gin.HandlerFunc{},
 		Routes: []httpmod.Route{
 			{
-				Path:    "/meta/:project/*name",
-				Method:  http.MethodGet,
-				Handler: httpmw.Cache(cmd, expire, Meta(store)),
+				Path:   "/meta/:project/*name",
+				Method: http.MethodGet,
+				Handler: httpmw.Cache(&httpmw.CacheParams{
+					Cache:       cmdable,
+					Expire:      expire,
+					Handle:      Meta(store),
+					ContentType: fmt.Sprintf("%s; charset=UTF-8", gin.MIMEJSON),
+				}),
 				Middleware: []gin.HandlerFunc{
-					httpmw.LimitPerUser(cmd, env.GroupLimit, env.Group, 0, env.Group),
+					httpmw.LimitPerUser(cmdable, env.GroupLimit, env.Group, 0, env.Group),
 				},
 			},
 		},

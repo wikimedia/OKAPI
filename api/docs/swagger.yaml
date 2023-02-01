@@ -11,24 +11,28 @@ definitions:
       prediction:
         type: boolean
       probability:
-        properties:
-          "false":
-            type: number
-          "true":
-            type: number
-        type: object
+        $ref: '#/definitions/ores.ScoreDamagingProbability'
+    type: object
+  ores.ScoreDamagingProbability:
+    properties:
+      "false":
+        type: number
+      "true":
+        type: number
     type: object
   ores.ScoreGoodFaith:
     properties:
       prediction:
         type: boolean
       probability:
-        properties:
-          "false":
-            type: number
-          "true":
-            type: number
-        type: object
+        $ref: '#/definitions/ores.ScoreGoodFaithProbability'
+    type: object
+  ores.ScoreGoodFaithProbability:
+    properties:
+      "false":
+        type: number
+      "true":
+        type: number
     type: object
   schema.ArticleBody:
     properties:
@@ -141,19 +145,15 @@ definitions:
     type: object
   schema.Project:
     properties:
-      date_modified:
+      dbName:
         type: string
-      identifier:
+      inLanguage:
         type: string
-      in_language:
-        $ref: '#/definitions/schema.Language'
       name:
         type: string
       size:
-        $ref: '#/definitions/schema.Size'
-      url:
         type: string
-      version:
+      url:
         type: string
     type: object
   schema.Protection:
@@ -171,13 +171,6 @@ definitions:
         $ref: '#/definitions/ores.ScoreDamaging'
       goodfaith:
         $ref: '#/definitions/ores.ScoreGoodFaith'
-    type: object
-  schema.Size:
-    properties:
-      unit_text:
-        type: string
-      value:
-        type: number
     type: object
   schema.Version:
     properties:
@@ -250,6 +243,42 @@ paths:
       - ApiKeyAuth: []
       summary: Returns tar.gz file with a specified date’s project revisions in JSON
         for specified namespace
+      tags:
+      - diffs
+    head:
+      description: Includes accept-ranges, Last-Modified, Content-Length, ETag, Cache-Control,
+        Content-Disposition, Content-Encoding, Content-Type and Expires headers
+      operationId: v1-diffs-head
+      parameters:
+      - description: Date of the diff in YYYY-MM-DD
+        in: path
+        name: date
+        required: true
+        type: string
+      - description: Project identifier
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Pages namespace (currently supported 0, 6, 14)
+        in: path
+        name: namespace
+        required: true
+        type: number
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns the headers with file size and other data before the download
       tags:
       - diffs
   /v1/diffs/json/{date}/{project}:
@@ -387,6 +416,42 @@ paths:
       - ApiKeyAuth: []
       summary: Returns today’s tar.gz file with JSON export of entire project corpus
         in specified namespace
+      tags:
+      - exports
+    head:
+      description: Includes accept-ranges, Last-Modified, Content-Length, ETag, Cache-Control,
+        Content-Disposition, Content-Encoding, Content-Type and Expires headers
+      operationId: v1-exports-head
+      parameters:
+      - description: Date of the diff in YYYY-MM-DD
+        in: path
+        name: date
+        required: true
+        type: string
+      - description: Project identifier
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Pages namespace (currently supported 0, 6, 14)
+        in: path
+        name: namespace
+        required: true
+        type: number
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperr.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperr.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Returns the headers with file size and other data before the download
       tags:
       - exports
   /v1/exports/json/{project}:

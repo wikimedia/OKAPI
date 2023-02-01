@@ -73,7 +73,18 @@ func main() {
 		log.Panic(err)
 	}
 
-	router.Use(httpmw.IpCognitoAuth(cog.New(auth.Session()), cmd, env.CognitoClientID, env.IpRange, time.Minute*5))
+	user := new(httpmw.CognitoUser)
+	user.SetUsername(env.IpCognitoUsername)
+	user.SetGroups([]string{env.IpCognitoUsergroup})
+
+	router.Use(httpmw.IpCognitoAuth(&httpmw.IpCognitoParams{
+		Srv:      cog.New(auth.Session()),
+		Cache:    cmd,
+		ClientID: env.CognitoClientID,
+		IpRange:  env.IpRange,
+		Expire:   time.Minute * 5,
+		User:     user,
+	}))
 	router.Use(httpmw.RBAC(httpmw.CasbinRBACAuthorizer(enf)))
 
 	for group, limit := range env.QPSLimitPerGroup {

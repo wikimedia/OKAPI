@@ -35,11 +35,15 @@ const envTestProjectsExpire = 120
 const envTestIpRange = "192.0.2.0-192.0.2.10,192.10.2.0-192.10.2.10"
 const envTestIpRangeRequestsLimit = 10
 
+const envTestIpCognitoUsername = "testname"
+const envTestIpCognitoUsergroup = "testgroup"
+
 const envTestAccessModel = "[request_definition] \nr = sub, obj, act \n\n[policy_definition] \np = sub, obj, act \n\n[role_definition] \ng = _, _ \ng2 = _, _ \n\n[policy_effect] \ne = some(where (p.eft == allow)) \n\n[matchers] \nm = g(r.sub, p.sub) && g2(r.obj, p.obj) && r.act == p.act"
 const envTestAccessPolicy = "p, *, /v1/docs, GET"
 
 const envTestGroup = "test_group"
 const envTestGroupLimit = 100
+const envTestGroupDownloadLimit = 10
 
 const envTestQPSLimitPerGroup = "group_1:100,group_2:200,group_3:300"
 
@@ -68,11 +72,15 @@ func TestInit(t *testing.T) {
 	os.Setenv(ipRange, envTestIpRange)
 	os.Setenv(ipRangeRequestsLimit, strconv.Itoa(envTestIpRangeRequestsLimit))
 
+	os.Setenv(ipCognitoUsername, envTestIpCognitoUsername)
+	os.Setenv(ipCognitoUsergroup, envTestIpCognitoUsergroup)
+
 	os.Setenv(accessModel, envTestAccessModel)
 	os.Setenv(accessPolicy, envTestAccessPolicy)
 
 	os.Setenv(group, envTestGroup)
 	os.Setenv(groupLimit, strconv.Itoa(envTestGroupLimit))
+	os.Setenv(groupDownloadLimit, strconv.Itoa(envTestGroupDownloadLimit))
 
 	os.Setenv(qpsLimitPerGroup, envTestQPSLimitPerGroup)
 
@@ -102,8 +110,12 @@ func TestInit(t *testing.T) {
 	assert.Equal(envTestIpRange, IpRange)
 	assert.Equal(envTestIpRangeRequestsLimit, IpRangeRequestsLimit)
 
+	assert.Equal(envTestIpCognitoUsername, IpCognitoUsername)
+	assert.Equal(envTestIpCognitoUsergroup, IpCognitoUsergroup)
+
 	assert.Equal(envTestGroup, Group)
 	assert.Equal(envTestGroupLimit, GroupLimit)
+	assert.Equal(envTestGroupDownloadLimit, GroupDownloadLimit)
 
 	for _, val := range str.Split(os.Getenv(qpsLimitPerGroup), ",") {
 		group := str.Split(val, ":")

@@ -1,7 +1,7 @@
 ###############
 # Build stage #
 ###############
-FROM golang:1.16 AS builder
+FROM golang:1.18 AS builder
 
 # Switch to /app dir
 WORKDIR /app
@@ -31,10 +31,10 @@ WORKDIR /root
 COPY --from=builder /app/main ./
 
 # Copy model from previous stage
-COPY --from=builder ./app/model.conf ./
+COPY --from=builder /app/model.conf ./
 
 # Copy policy from previous stage 
-COPY --from=builder ./app/policy.csv ./
+COPY --from=builder /app/policy.csv ./
 
 # Set the binary as the CMD of the container
 CMD ["./main"]

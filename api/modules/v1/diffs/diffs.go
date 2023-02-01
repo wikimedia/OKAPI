@@ -29,6 +29,11 @@ func Init() httpmod.Module {
 				Handler: JSONNS(store),
 			},
 			{
+				Path:    "/download/:date/:namespace/:project",
+				Method:  http.MethodHead,
+				Handler: Head(store),
+			},
+			{
 				Path:    "/meta/:date/:namespace",
 				Method:  http.MethodGet,
 				Handler: List(store),

@@ -64,6 +64,12 @@ var IpRange string
 // IpRangeRequestsLimit limit of requests per second for ip ranges
 var IpRangeRequestsLimit int
 
+// IpCognitoUsername default username for ip cognito auth
+var IpCognitoUsername string
+
+// IpCognitoUserGroup default user group for ip cognito auth
+var IpCognitoUsergroup string
+
 // Access control model
 var AccessModelPath string
 
@@ -75,6 +81,9 @@ var Group string
 
 // GroupLimit number of requests for a custom group
 var GroupLimit int = 10000
+
+// GroupDownloadLimit number of requests for a custom group
+var GroupDownloadLimit int = 1000
 
 // QPSLimitPerGroup QPS limitations per user group
 var QPSLimitPerGroup = map[string]int{}
@@ -102,32 +111,38 @@ const projectsExpire = "PROJECTS_EXPIRE"
 const ipRange = "IP_RANGE"
 const ipRangeRequestsLimit = "IP_RANGE_REQUESTS_LIMIT"
 
+const ipCognitoUsername = "IP_COGNITO_USERNAME"
+const ipCognitoUsergroup = "IP_COGNITO_USERGROUP"
+
 const accessModel = "ACCESS_MODEL"
 const accessPolicy = "ACCESS_POLICY"
 
 const group = "GROUP"
 const groupLimit = "GROUP_LIMIT"
+const groupDownloadLimit = "GROUP_DOWNLOAD_LIMIT"
 
 const qpsLimitPerGroup = "QPS_LIMIT_PER_GROUP"
 
 const errorMessage = "env variable '%s' not found"
 
 var strings = map[*string]string{
-	&APIPort:         apiPort,
-	&APIMode:         apiMode,
-	&AWSURL:          awsURL,
-	&AWSRegion:       awsRegion,
-	&AWSBucket:       awsBucket,
-	&AWSKey:          awsKey,
-	&AWSID:           awsID,
-	&CognitoClientID: cognitoClientID,
-	&AWSAuthRegion:   awsAuthRegion,
-	&AWSAuthKey:      awsAuthKey,
-	&AWSAuthID:       awsAuthID,
-	&RedisAddr:       redisAddr,
-	&RedisPassword:   redisPassword,
-	&IpRange:         ipRange,
-	&Group:           group,
+	&APIPort:            apiPort,
+	&APIMode:            apiMode,
+	&AWSURL:             awsURL,
+	&AWSRegion:          awsRegion,
+	&AWSBucket:          awsBucket,
+	&AWSKey:             awsKey,
+	&AWSID:              awsID,
+	&CognitoClientID:    cognitoClientID,
+	&AWSAuthRegion:      awsAuthRegion,
+	&AWSAuthKey:         awsAuthKey,
+	&AWSAuthID:          awsAuthID,
+	&RedisAddr:          redisAddr,
+	&RedisPassword:      redisPassword,
+	&IpRange:            ipRange,
+	&Group:              group,
+	&IpCognitoUsername:  ipCognitoUsername,
+	&IpCognitoUsergroup: ipCognitoUsergroup,
 }
 
 var integers = map[*int]string{
@@ -137,7 +152,8 @@ var integers = map[*int]string{
 }
 
 var optionalIntegers = map[*int]string{
-	&GroupLimit: groupLimit,
+	&GroupLimit:         groupLimit,
+	&GroupDownloadLimit: groupDownloadLimit,
 }
 
 type fileVar struct {

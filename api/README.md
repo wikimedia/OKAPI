@@ -68,13 +68,13 @@ $ go test ./... -v
 $ go test ./env/ -run TestInit -v
 ```
 
-## Using docker
+## Using docker:
 
 1. Running the app:
 ```bash
 $ (sudo) docker-compose up #optionally you can add -d flag
 ```
 
-## To update/test RBAC
+## To update/test RBAC:
 
 Use [this](https://github.com/prabhat393/rbac-example) for prototyping. Once you have a working `model.conf` and `policy.csv`, replace the ones in the base folder with your new model/policy. Currently, we are using [RBAC with transitive user roles](https://github.com/casbin/casbin/blob/master/examples/rbac_with_hierarchy_policy.csv).
