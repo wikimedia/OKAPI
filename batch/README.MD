@@ -2,8 +2,7 @@
 
 Thi file contains short installation guide for engineers to start working with the system. As this is gRPC server by large you might need client to work with the application, we recommend [BloomRPC](https://github.com/uw-labs/bloomrpc) as fast and easy to use app for development.
 
-## Getting started
-
+## Getting started:
 1. Create `.env` file in the project root (you need Kafka broker to start the application, alternatively look at docker spin up section below). Here's an example of the file:
 
 ```bash
@@ -43,7 +42,7 @@ go run listener/main.go
 make protos
 ```
 
-## Using docker
+## Using docker: 
 
 1. Make sure `docker` and `docker-compose` is installed on yor machine.
 
